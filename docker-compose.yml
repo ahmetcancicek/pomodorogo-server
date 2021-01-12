@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_DB=pomodorogo-server
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - 5432:5432
+
+  pomodorogo-server:
+    container_name: pomodorogo-server
+    restart: always
+    build:
+      context: .
+    depends_on:
+      - postgres
+    ports:
+      - 8500:8500
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
