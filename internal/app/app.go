@@ -36,6 +36,7 @@ func (app *pomodoroServerApplication) Init() error {
 	timeoutContext := time.Duration(10)
 	router := mux.NewRouter()
 
+	// TODO: We should get these property from config
 	app.router = router
 	app.httpServer.Addr = ":8500"
 	app.httpServer.Handler = app.router
@@ -49,6 +50,8 @@ func (app *pomodoroServerApplication) Init() error {
 }
 
 func (app *pomodoroServerApplication) StartDB() error {
+
+	// TODO: We should get these property from config
 	connStr := "postgres://postgres:password@localhost/pomodorogo-server?sslmode=disable"
 	dbConn, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -60,8 +63,7 @@ func (app *pomodoroServerApplication) StartDB() error {
 		log.Fatal(err)
 	}
 
-	// TODO: Defer
-
+	// TODO: We should write a defer function for db
 	return nil
 }
 
