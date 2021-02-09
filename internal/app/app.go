@@ -1,16 +1,16 @@
 package app
 
 import (
-	"database/sql"
+	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/repository/postgresql"
+	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
-	"time"
-
-	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
-	authRepo "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/repository"
-	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 )
 
 type App interface {
@@ -23,7 +23,7 @@ type App interface {
 type pomodoroServerApplication struct {
 	router     *mux.Router
 	httpServer http.Server
-	dbConn     *sql.DB
+	db         *gorm.DB
 }
 
 func NewApp() (*pomodoroServerApplication, error) {
@@ -33,7 +33,6 @@ func NewApp() (*pomodoroServerApplication, error) {
 
 func (app *pomodoroServerApplication) Init() error {
 
-	timeoutContext := time.Duration(10)
 	router := mux.NewRouter()
 
 	// TODO: We should get these property from config
@@ -42,8 +41,8 @@ func (app *pomodoroServerApplication) Init() error {
 	app.httpServer.Handler = app.router
 
 	// Auth Package
-	authRepo := authRepo.NewPostgreSQLUserRepository(app.dbConn)
-	authService := authService.NewUserService(authRepo, timeoutContext)
+	authRepo := postgresql.NewPostgreSQLUserRepository(app.db)
+	authService := authService.NewUserService(authRepo)
 	authHandler.NewAuthHandler(router, authService)
 
 	return nil
@@ -52,18 +51,15 @@ func (app *pomodoroServerApplication) Init() error {
 func (app *pomodoroServerApplication) StartDB() error {
 
 	// TODO: We should get these property from config
-	connStr := "postgres://postgres:password@localhost/pomodorogo-server?sslmode=disable"
-	dbConn, err := sql.Open("postgres", connStr)
+	dsn := "host=localhost user=postgres password=password dbname=pomodorogo-server port=5432"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db.AutoMigrate(&model.User{})
+
 	if err != nil {
 		log.Fatal(err)
 	}
+	app.db = db
 
-	err = dbConn.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// TODO: We should write a defer function for db
 	return nil
 }
 
