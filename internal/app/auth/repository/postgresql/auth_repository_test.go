@@ -42,6 +42,18 @@ func (s *Suite) SetupSuite() {
 
 }
 
+var (
+	mockID        int64     = 123456
+	mockUUID                = uuid.NewV4()
+	mockFirstName string    = "FirstName"
+	mockLastName  string    = "LastName"
+	mockUsername  string    = "username"
+	mockEmail     string    = "email@email.com"
+	mockPassword  string    = "password"
+	mockCreatedAt time.Time = time.Now()
+	mockUpdatedAt time.Time = time.Now()
+)
+
 func TestInit(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
@@ -73,77 +85,56 @@ func (s *Suite) TestFindByID() {
 }
 
 func (s *Suite) TestUpdate() {
-	var (
-		id        int64     = 123456
-		uuid                = uuid.NewV4()
-		firstName string    = "FirstName"
-		lastName  string    = "LastName"
-		username  string    = "username"
-		email     string    = "email@email.com"
-		password  string    = "password"
-		createdAt time.Time = time.Now()
-		updatedAt time.Time = time.Now()
-	)
+
 	s.mock.ExpectQuery(regexp.QuoteMeta(
 		`UPDATE "users" SET "first_name" = $1,"last_name" = $2,"username" = $3,"email" = $4,"password" = $5,"updated_at" = $6 WHERE "id" = $7 RETURNING "id"`)).
-		WithArgs(firstName, lastName, username, email, password, updatedAt, id).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(id))
+		WithArgs(mockFirstName, mockLastName, mockUsername, mockEmail, mockPassword, mockUpdatedAt, mockID).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(mockID))
 
 	// New value
-	firstName = "Update FirstName"
+	mockFirstName = "Update FirstName"
 
 	user := &model.User{
-		ID:        id,
-		UUID:      uuid,
-		FirstName: firstName,
-		LastName:  lastName,
-		Username:  username,
-		Email:     email,
-		Password:  password,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		ID:        mockID,
+		UUID:      mockUUID,
+		FirstName: mockFirstName,
+		LastName:  mockLastName,
+		Username:  mockUsername,
+		Email:     mockEmail,
+		Password:  mockPassword,
+		CreatedAt: mockCreatedAt,
+		UpdatedAt: mockUpdatedAt,
 	}
 
 	err := s.repository.Update(user)
 
 	require.NoError(s.T(), err)
-	assert.Equal(s.T(), firstName, user.FirstName, "They should be equal!")
+	assert.Equal(s.T(), mockFirstName, user.FirstName, "They should be equal!")
 
 }
 
 func (s *Suite) TestSave() {
-	var (
-		id        int64     = 123456
-		uuid                = uuid.NewV4()
-		firstName string    = "FirstName"
-		lastName  string    = "LastName"
-		username  string    = "username"
-		email     string    = "email@email.com"
-		password  string    = "password"
-		createdAt time.Time = time.Now()
-		updatedAt time.Time = time.Now()
-	)
 
 	s.mock.ExpectQuery(regexp.QuoteMeta(
 		`INSERT INTO "users" ("uuid","first_name","last_name","username","email","password","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "id"`)).
-		WithArgs(uuid, firstName, lastName, username, email, password, createdAt, updatedAt).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(id))
+		WithArgs(mockUUID, mockFirstName, mockLastName, mockUsername, mockEmail, mockPassword, mockCreatedAt, mockUpdatedAt).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(mockID))
 
 	user := &model.User{
-		UUID:      uuid,
-		FirstName: firstName,
-		LastName:  lastName,
-		Username:  username,
-		Email:     email,
-		Password:  password,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		UUID:      mockUUID,
+		FirstName: mockFirstName,
+		LastName:  mockLastName,
+		Username:  mockUsername,
+		Email:     mockEmail,
+		Password:  mockPassword,
+		CreatedAt: mockCreatedAt,
+		UpdatedAt: mockUpdatedAt,
 	}
 
 	err := s.repository.Save(user)
 
 	require.NoError(s.T(), err)
-	assert.Equal(s.T(), id, user.ID, "They should be equal!")
+	assert.Equal(s.T(), mockID, user.ID, "They should be equal!")
 
 }
 
