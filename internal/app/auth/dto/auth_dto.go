@@ -1,9 +1,19 @@
 package dto
 
 type AuthSignUpDTO struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	FirstName string `validate:"required" json:"firstName"`
+	LastName  string `validate:"required" json:"lastName"`
+	Username  string `validate:"required" json:"username"`
+	Email     string `validate:"required" json:"email"`
+	Password  string `validate:"required" json:"password"`
+}
+
+type AuthLoginDTO struct {
+	Email    string `validate:"required" json:"email"`
+	Password string `validate:"required" json:"password"`
+}
+
+type AuthLoginResponseDTO struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
