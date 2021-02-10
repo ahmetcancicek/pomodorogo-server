@@ -63,25 +63,37 @@ func (s *Suite) AfterTest(_, _ string) {
 }
 
 func (s *Suite) TestFindByID() {
-	var (
-		id        int64  = 123456
-		firstName string = "FirstName"
-	)
-
-	mockedRow := sqlmock.NewRows([]string{"id", "first_name"}).AddRow(id, firstName)
-
+	mockedRow := sqlmock.NewRows([]string{"id", "first_name"}).AddRow(mockID, mockFirstName)
 	s.mock.ExpectQuery(regexp.QuoteMeta(
 		`SELECT * FROM "users" WHERE id = $1 ORDER BY "users"."id" LIMIT 1`)).
-		WithArgs(id).
+		WithArgs(mockID).
 		WillReturnRows(mockedRow)
 
-	res, err := s.repository.FindByID(id)
+	res, err := s.repository.FindByID(mockID)
 
 	require.NoError(s.T(), err)
 
-	assert.Equal(s.T(), firstName, res.FirstName, "They should be equal!")
+	assert.Equal(s.T(), mockFirstName, res.FirstName, "They should be equal!")
 
-	assert.Equal(s.T(), id, res.ID, "They should be equal!")
+	assert.Equal(s.T(), mockID, res.ID, "They should be equal!")
+}
+
+func (s *Suite) TestFindByCredentials() {
+
+	mockedRow := sqlmock.NewRows([]string{"id", "email", "username", "password"}).AddRow(mockID, mockEmail, mockUsername, mockPassword)
+	s.mock.ExpectQuery(regexp.QuoteMeta(
+		`SELECT * FROM "users" WHERE email = $1 ORDER BY "users"."id" LIMIT 1`)).
+		WithArgs(mockEmail).
+		WillReturnRows(mockedRow)
+
+	res, err := s.repository.FindByCredentials(mockEmail, mockPassword)
+
+	require.NoError(s.T(), err)
+
+	assert.Equal(s.T(), mockPassword, res.Password, "They should be equal!")
+
+	assert.Equal(s.T(), mockEmail, res.Email, "They should be equal!")
+
 }
 
 func (s *Suite) TestUpdate() {

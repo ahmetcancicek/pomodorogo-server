@@ -26,6 +26,15 @@ func (u userService) FindByID(id int64) (*model.User, error) {
 	return user, nil
 }
 
+func (u userService) FindByCredentials(email, password string) (*model.User, error) {
+	user, err := u.userRepository.FindByCredentials(email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (u userService) Update(user *model.User) error {
 	user.UpdatedAt = time.Now()
 	return u.userRepository.Update(user)

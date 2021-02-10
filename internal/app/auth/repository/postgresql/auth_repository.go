@@ -20,6 +20,21 @@ func (p postgreSQLUserRepository) FindByID(id int64) (*model.User, error) {
 	return user, err
 }
 
+func (p postgreSQLUserRepository) FindByCredentials(email, password string) (*model.User, error) {
+	user := new(model.User)
+	err := p.db.Where(`email = ?`, email).First(&user).Error
+	if err != nil {
+		return user, err
+	}
+
+	// TODO: We should apply decrypt algorithms
+	if user.Password != password {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func (p postgreSQLUserRepository) Update(user *model.User) error {
 	// TODO:
 	return nil
