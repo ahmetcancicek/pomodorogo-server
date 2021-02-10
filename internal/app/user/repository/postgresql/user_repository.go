@@ -1,8 +1,8 @@
 package postgresql
 
 import (
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
 	"gorm.io/gorm"
 )
 
@@ -10,7 +10,7 @@ type postgreSQLUserRepository struct {
 	db *gorm.DB
 }
 
-func NewPostgreSQLUserRepository(db *gorm.DB) auth.Repository {
+func NewPostgreSQLUserRepository(db *gorm.DB) user.Repository {
 	return &postgreSQLUserRepository{db}
 }
 
@@ -50,6 +50,6 @@ func (p postgreSQLUserRepository) Delete(id int64) error {
 	return err
 }
 
-func CreateRepository(db *gorm.DB) auth.Repository {
+func CreateRepository(db *gorm.DB) user.Repository {
 	return &postgreSQLUserRepository{db: db}
 }

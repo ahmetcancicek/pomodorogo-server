@@ -1,17 +1,17 @@
 package service
 
 import (
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
 	"time"
 )
 
 type userService struct {
-	userRepository auth.Repository
+	userRepository user.Repository
 }
 
 // NewUserService will create new an useService object representation of of user.Service interface
-func NewUserService(userRepository auth.Repository) auth.Service {
+func NewUserService(userRepository user.Repository) user.Service {
 	return &userService{
 		userRepository: userRepository,
 	}
