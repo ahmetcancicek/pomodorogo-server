@@ -20,6 +20,12 @@ func (p postgreSQLUserRepository) FindByID(id int64) (*model.User, error) {
 	return user, err
 }
 
+func (p postgreSQLUserRepository) FindByEmail(email string) (*model.User, error) {
+	user := new(model.User)
+	err := p.db.Where(`email = ?`, email).First(&user).Error
+	return user, err
+}
+
 func (p postgreSQLUserRepository) FindByCredentials(email, password string) (*model.User, error) {
 	user := new(model.User)
 	err := p.db.Where(`email = ?`, email).First(&user).Error
