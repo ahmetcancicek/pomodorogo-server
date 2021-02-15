@@ -43,15 +43,15 @@ func (s *Suite) SetupSuite() {
 }
 
 var (
-	mockID        int64     = 123456
-	mockUUID                = uuid.NewV4()
-	mockFirstName string    = "FirstName"
-	mockLastName  string    = "LastName"
-	mockUsername  string    = "username"
-	mockEmail     string    = "email@email.com"
-	mockPassword  string    = "password"
-	mockCreatedAt time.Time = time.Now()
-	mockUpdatedAt time.Time = time.Now()
+	mockID        int64 = 123456
+	mockUUID            = uuid.NewV4()
+	mockFirstName       = "FirstName"
+	mockLastName        = "LastName"
+	mockUsername        = "username"
+	mockEmail           = "email@email.com"
+	mockPassword        = "password"
+	mockCreatedAt       = time.Now()
+	mockUpdatedAt       = time.Now()
 )
 
 func TestInit(t *testing.T) {
