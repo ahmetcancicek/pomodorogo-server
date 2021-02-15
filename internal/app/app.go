@@ -43,9 +43,9 @@ func (app *pomodoroServerApplication) Init() error {
 
 	// Auth Package
 	userRepository := postgresql.NewPostgreSQLUserRepository(app.db)
-	userService := userService.NewUserService(userRepository)
-	authService := authService.NewAuthService()
-	authHandler.NewAuthHandler(router, userService, authService)
+	userLogic := userService.NewUserService(userRepository)
+	authLogic := authService.NewAuthService()
+	authHandler.NewAuthHandler(router, userLogic, authLogic)
 
 	return nil
 }
