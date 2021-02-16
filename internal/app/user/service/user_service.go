@@ -26,6 +26,15 @@ func (u userService) FindByID(id int64) (*model.User, error) {
 	return user, nil
 }
 
+func (u userService) FindByUUID(uuid string) (*model.User, error) {
+	user, err := u.userRepository.FindByUUID(uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (u userService) FindByEmail(email string) (*model.User, error) {
 	user, err := u.userRepository.FindByEmail(email)
 	if err != nil {

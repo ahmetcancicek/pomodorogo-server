@@ -6,6 +6,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	user2 "github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user/repository/postgresql"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/util"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,6 +50,7 @@ var (
 	mockLastName        = "LastName"
 	mockUsername        = "username"
 	mockEmail           = "email@email.com"
+	mockTokenHash       = util.GenerateRandomString(15)
 	mockPassword        = "password"
 	mockCreatedAt       = time.Now()
 	mockUpdatedAt       = time.Now()
@@ -76,6 +78,23 @@ func (s *Suite) TestFindByID() {
 	assert.Equal(s.T(), mockFirstName, res.FirstName, "They should be equal!")
 
 	assert.Equal(s.T(), mockID, res.ID, "They should be equal!")
+}
+
+func (s *Suite) TestFindByUUID() {
+	mockedRow := sqlmock.NewRows([]string{"id", "uuid", "first_name"}).AddRow(mockID, mockUUID, mockFirstName)
+	s.mock.ExpectQuery(regexp.QuoteMeta(
+		`SELECT * FROM "users" WHERE uuid = $1 ORDER BY "users"."id" LIMIT 1`)).
+		WithArgs(mockUUID).
+		WillReturnRows(mockedRow)
+
+	res, err := s.repository.FindByUUID(mockUUID.String())
+
+	require.NoError(s.T(), err)
+
+	assert.Equal(s.T(), mockFirstName, res.FirstName, "They should be equal!")
+
+	assert.Equal(s.T(), mockID, res.ID, "They should be equal!")
+
 }
 
 func (s *Suite) TestFindByEmail() {
@@ -144,8 +163,8 @@ func (s *Suite) TestUpdate() {
 func (s *Suite) TestSave() {
 
 	s.mock.ExpectQuery(regexp.QuoteMeta(
-		`INSERT INTO "users" ("uuid","first_name","last_name","username","email","password","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING "id"`)).
-		WithArgs(mockUUID, mockFirstName, mockLastName, mockUsername, mockEmail, mockPassword, mockCreatedAt, mockUpdatedAt).
+		`INSERT INTO "users" ("uuid","first_name","last_name","username","token_hash","email","password","created_at","updated_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING "id"`)).
+		WithArgs(mockUUID, mockFirstName, mockLastName, mockUsername, mockTokenHash, mockEmail, mockPassword, mockCreatedAt, mockUpdatedAt).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(mockID))
 
 	user := &model.User{
@@ -154,6 +173,7 @@ func (s *Suite) TestSave() {
 		LastName:  mockLastName,
 		Username:  mockUsername,
 		Email:     mockEmail,
+		TokenHash: mockTokenHash,
 		Password:  mockPassword,
 		CreatedAt: mockCreatedAt,
 		UpdatedAt: mockUpdatedAt,

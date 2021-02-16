@@ -7,6 +7,7 @@ import (
 // UserService represent the user's service
 type Service interface {
 	FindByID(id int64) (*model.User, error)
+	FindByUUID(uuid string) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
 	FindByCredentials(email, password string) (*model.User, error)
 	Update(user *model.User) error

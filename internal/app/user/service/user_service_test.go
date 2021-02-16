@@ -6,6 +6,10 @@ func FindByID(t *testing.T) {
 
 }
 
+func FindByUUID(t *testing.T) {
+
+}
+
 func Update(t *testing.T) {
 
 }
