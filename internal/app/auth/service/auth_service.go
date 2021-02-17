@@ -1,20 +1,27 @@
 package service
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/dgrijalva/jwt-go"
-	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
+	"io/ioutil"
 	"time"
 )
 
 type authService struct {
+	configs *utils.Configurations
 }
 
 // NewAuthService will create new an useService object representation of of auth.Service interface
-func NewAuthService() auth.Service {
-	return &authService{}
+func NewAuthService(c *utils.Configurations) auth.Service {
+	return &authService{configs: c}
 }
 
 func (a authService) Authenticate(password string, user *model.User) bool {
@@ -25,53 +32,155 @@ func (a authService) Authenticate(password string, user *model.User) bool {
 	return true
 }
 
-// AccessTokenCustomClaims specifies the claims for access token
-type AccessTokenCustomClaims struct {
-	UserID  string
-	KeyType string
+type RefreshTokenCustomClaims struct {
+	UserUUID  string
+	CustomKey string
+	KeyType   string
 	jwt.StandardClaims
 }
 
+type AccessTokenCustomClaims struct {
+	UserUUID string
+	KeyType  string
+	jwt.StandardClaims
+}
+
+// GenerateAccessToken generates a new access token for the given user
 func (a authService) GenerateAccessToken(user *model.User) (string, error) {
-	// TODO: We must get secret key from config file
-	accessSecret := []byte("AllYourBase")
-	accessTokenExpireDuration := time.Duration(time.Minute * 5)
+	// TODO: We must get secret key and time from config file
+	//accessTokenExpireDuration := time.Duration(time.Minute * 5)
+	//accessTokenExpiresTime := time.Now().Add(accessTokenExpireDuration)
 
-	accessTokenExpiresTime := time.Now().Add(accessTokenExpireDuration)
-	accessTokenUUID := uuid.NewV4()
+	tokenType := "access"
 
-	// Create Access Token
-	accessTokenClaims := jwt.MapClaims{}
-	accessTokenClaims["authorized"] = true
-	accessTokenClaims["user_uuid"] = user.UUID.String()
-	accessTokenClaims["uuid"] = accessTokenUUID
-	accessTokenClaims["exp"] = accessTokenExpiresTime.Unix()
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-	return accessToken.SignedString([]byte(accessSecret))
+	claims := AccessTokenCustomClaims{
+		user.UUID.String(),
+		tokenType,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Minute * time.Duration(5)).Unix(),
+			Issuer:    "pomodorogo.auth.service",
+		},
+	}
+
+	// TODO: We must get from config file
+	signBytes, err := ioutil.ReadFile(a.configs.AccessTokenPrivateKeyPath)
+	if err != nil {
+		fmt.Print("Error")
+		return "", errors.New("could not generate access token. please try again later")
+	}
+
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		return "", errors.New("could not generate access token. please try again later")
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+	return token.SignedString(signKey)
 
 }
 
+// GenerateRefreshToken generate a new refresh token for the given user
 func (a authService) GenerateRefreshToken(user *model.User) (string, error) {
-	// TODO: We must get secret key from config file
-	accessSecret := []byte("AllYourBase")
-	refreshTokenExpireDuration := time.Duration(time.Minute * 5)
 
-	refreshTokenExpiresTime := time.Now().Add(refreshTokenExpireDuration)
-	refreshTokenUUID := uuid.NewV4()
+	customKey := a.GenerateCustomKey(user.UUID.String(), user.TokenHash)
+	tokenType := "refresh"
 
-	// Create Access Token
-	refreshTokenClaims := jwt.MapClaims{}
-	refreshTokenClaims["user_uuid"] = user.UUID.String()
-	refreshTokenClaims["exp"] = refreshTokenExpiresTime.Unix()
-	refreshTokenClaims["uuid"] = refreshTokenUUID
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-	return refreshToken.SignedString([]byte(accessSecret))
+	claims := RefreshTokenCustomClaims{
+		user.UUID.String(),
+		customKey,
+		tokenType,
+		jwt.StandardClaims{
+			Issuer: "pomodorogo.auth.service",
+		},
+	}
+
+	// TODO: We must get from config file
+	signBytes, err := ioutil.ReadFile(a.configs.RefreshTokenPrivateKeyPath)
+	if err != nil {
+		return "", errors.New("could not generate refresh token. please try again later")
+	}
+
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+	if err != nil {
+		return "", errors.New("could not generate refresh token. please try again later")
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+	return token.SignedString(signKey)
 }
 
-func (a authService) ValidateAccessToken(token string) (string, error) {
-	panic("implement me")
+// GenerateCustomKey creates a new key for our jwt payload
+func (a *authService) GenerateCustomKey(userUUID string, tokenHash string) string {
+	h := hmac.New(sha256.New, []byte(tokenHash))
+	h.Write([]byte(userUUID))
+	sha := hex.EncodeToString(h.Sum(nil))
+	return sha
 }
 
-func (a authService) ValidateRefreshToken(token string) (string, error) {
-	panic("implement me")
+//
+func (a authService) ValidateAccessToken(tokenString string) (string, error) {
+
+	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, errors.New("Unexpected signing method in auth token")
+		}
+
+		verifyBytes, err := ioutil.ReadFile(a.configs.AccessTokenPublicKeyPath)
+		if err != nil {
+			return nil, err
+		}
+
+		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		return verifyKey, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(*AccessTokenCustomClaims)
+	if !ok || !token.Valid || claims.UserUUID == "" || claims.KeyType != "access" {
+		return "", errors.New("invalid token: authentication failed")
+	}
+
+	return claims.UserUUID, nil
+}
+
+//
+func (a authService) ValidateRefreshToken(tokenString string) (string, string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, errors.New("Unexpected signing method in auth token")
+		}
+
+		verifyBytes, err := ioutil.ReadFile(a.configs.RefreshTokenPublicKeyPath)
+		if err != nil {
+			return nil, err
+		}
+
+		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		return verifyKey, nil
+	})
+
+	if err != nil {
+		return "", "", err
+	}
+
+	claims, ok := token.Claims.(*RefreshTokenCustomClaims)
+	if !ok || !token.Valid || claims.UserUUID == "" || claims.KeyType != "refresh" {
+		return "", "", errors.New("invalid token: authentication failed")
+	}
+	return claims.UserUUID, claims.CustomKey, nil
 }
