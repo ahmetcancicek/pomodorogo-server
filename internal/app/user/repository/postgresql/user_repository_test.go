@@ -6,7 +6,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	user2 "github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user/repository/postgresql"
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/util"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -50,7 +50,7 @@ var (
 	mockLastName        = "LastName"
 	mockUsername        = "username"
 	mockEmail           = "email@email.com"
-	mockTokenHash       = util.GenerateRandomString(15)
+	mockTokenHash       = utils.GenerateRandomString(15)
 	mockPassword        = "password"
 	mockCreatedAt       = time.Now()
 	mockUpdatedAt       = time.Now()
