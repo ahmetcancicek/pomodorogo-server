@@ -24,10 +24,10 @@ func NewConfigurations() *Configurations {
 	viper.SetDefault("DB_USER", "postgres")
 	viper.SetDefault("DB_PASSWORD", "password")
 	viper.SetDefault("DB_PORT", "5432")
-	viper.SetDefault("ACCESS_TOKEN_PRIVATE_KEY_PATH", "~/access-private.pem")
-	viper.SetDefault("ACCESS_TOKEN_PUBLIC_KEY_PATH", "~/access-public.pem")
-	viper.SetDefault("REFRESH_TOKEN_PRIVATE_KEY_PATH", "~/refresh-private.pem")
-	viper.SetDefault("REFRESH_TOKEN_PUBLIC_KEY_PATH", "~/refresh-public.pem")
+	viper.SetDefault("ACCESS_TOKEN_PRIVATE_KEY_PATH", "./access-private.pem")
+	viper.SetDefault("ACCESS_TOKEN_PUBLIC_KEY_PATH", "./access-public.pem")
+	viper.SetDefault("REFRESH_TOKEN_PRIVATE_KEY_PATH", "./refresh-private.pem")
+	viper.SetDefault("REFRESH_TOKEN_PUBLIC_KEY_PATH", "./refresh-public.pem")
 
 	configs := &Configurations{
 		ServerAddress:              viper.GetString("SERVER_ADDRESS"),
