@@ -1,5 +1,6 @@
 package model
 
+// JSON Response ...
 type GenericResponse struct {
 	Code    int         `json:"code"`
 	Status  bool        `json:"status"`
