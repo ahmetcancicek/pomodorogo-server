@@ -6,6 +6,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user/repository/postgresql"
 	userService "github.com/ahmetcancicek/pomodorogo-server/internal/app/user/service"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -36,6 +37,10 @@ func (app *pomodoroServerApplication) Init() error {
 
 	router := mux.NewRouter()
 
+	configs := utils.NewConfigurations()
+
+	logger := utils.NewLogger()
+
 	// TODO: We should get these property from config
 	app.router = router
 	app.httpServer.Addr = ":8500"
@@ -44,8 +49,8 @@ func (app *pomodoroServerApplication) Init() error {
 	// Auth Package
 	userRepository := postgresql.NewPostgreSQLUserRepository(app.db)
 	userLogic := userService.NewUserService(userRepository)
-	authLogic := authService.NewAuthService()
-	authHandler.NewAuthHandler(router, userLogic, authLogic)
+	authLogic := authService.NewAuthService(configs)
+	authHandler.NewAuthHandler(router, logger, userLogic, authLogic)
 
 	return nil
 }
