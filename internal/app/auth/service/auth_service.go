@@ -5,28 +5,31 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"time"
 )
 
 type authService struct {
+	logger  *logrus.Logger
 	configs *utils.Configurations
 }
 
 // NewAuthService will create new an useService object representation of of auth.Service interface
-func NewAuthService(c *utils.Configurations) auth.Service {
-	return &authService{configs: c}
+func NewAuthService(l *logrus.Logger, c *utils.Configurations) auth.Service {
+	return &authService{
+		logger:  l,
+		configs: c}
 }
 
 func (a authService) Authenticate(password string, user *model.User) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		//auth.logger.Debug("password hashes are not same")
+		a.logger.Debug("password hashes are not same")
 		return false
 	}
 	return true
@@ -60,12 +63,13 @@ func (a authService) GenerateAccessToken(user *model.User) (string, error) {
 
 	signBytes, err := ioutil.ReadFile(a.configs.AccessTokenPrivateKeyPath)
 	if err != nil {
-		fmt.Print("Error")
+		a.logger.Error("unable to read private key", err)
 		return "", errors.New("could not generate access token. please try again later")
 	}
 
 	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
 	if err != nil {
+		a.logger.Error("unable to parse private key", err)
 		return "", errors.New("could not generate access token. please try again later")
 	}
 
@@ -92,11 +96,13 @@ func (a authService) GenerateRefreshToken(user *model.User) (string, error) {
 
 	signBytes, err := ioutil.ReadFile(a.configs.RefreshTokenPrivateKeyPath)
 	if err != nil {
+		a.logger.Error("unable to read private key", err)
 		return "", errors.New("could not generate refresh token. please try again later")
 	}
 
 	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
 	if err != nil {
+		a.logger.Error("unable to parse private key", err)
 		return "", errors.New("could not generate refresh token. please try again later")
 	}
 
@@ -119,16 +125,19 @@ func (a authService) ValidateAccessToken(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, errors.New("Unexpected signing method in auth token")
+			a.logger.Error("unexpected signing method in auth token")
+			return nil, errors.New("unexpected signing method in auth token")
 		}
 
 		verifyBytes, err := ioutil.ReadFile(a.configs.AccessTokenPublicKeyPath)
 		if err != nil {
+			a.logger.Error("unable to read public key", "error", err)
 			return nil, err
 		}
 
 		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 		if err != nil {
+			a.logger.Error("unable to parse public key", "error", err)
 			return nil, err
 		}
 
@@ -136,6 +145,7 @@ func (a authService) ValidateAccessToken(tokenString string) (string, error) {
 	})
 
 	if err != nil {
+		a.logger.Error("unable to parse claims", "error", err)
 		return "", err
 	}
 
@@ -152,16 +162,19 @@ func (a authService) ValidateRefreshToken(tokenString string) (string, string, e
 	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, errors.New("Unexpected signing method in auth token")
+			a.logger.Error("Unexpected signing method in auth token")
+			return nil, errors.New("unexpected signing method in auth token")
 		}
 
 		verifyBytes, err := ioutil.ReadFile(a.configs.RefreshTokenPublicKeyPath)
 		if err != nil {
+			a.logger.Error("unable to read public key", "error", err)
 			return nil, err
 		}
 
 		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 		if err != nil {
+			a.logger.Error("unable to parse public key", "error", err)
 			return nil, err
 		}
 
@@ -169,11 +182,13 @@ func (a authService) ValidateRefreshToken(tokenString string) (string, string, e
 	})
 
 	if err != nil {
+		a.logger.Error("unable to parse claims", "error", err)
 		return "", "", err
 	}
 
 	claims, ok := token.Claims.(*RefreshTokenCustomClaims)
 	if !ok || !token.Valid || claims.UserUUID == "" || claims.KeyType != "refresh" {
+		a.logger.Debug("could not extract claims from token")
 		return "", "", errors.New("invalid token: authentication failed")
 	}
 	return claims.UserUUID, claims.CustomKey, nil

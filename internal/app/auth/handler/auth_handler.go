@@ -41,6 +41,8 @@ func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService user.
 func (h AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// TODO: Refactoring
+
 	// 1. Decode request body
 	reqUser := r.Context().Value(UserKey{}).(model.User)
 
@@ -106,6 +108,8 @@ func (h *AuthHandler) hashPassword(password string) (string, error) {
 
 func (h AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// TODO: Refactoring
 
 	// 1. Decode request body
 	reqUser := r.Context().Value(UserKey{}).(model.User)
