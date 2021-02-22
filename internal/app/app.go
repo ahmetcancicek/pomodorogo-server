@@ -35,15 +35,16 @@ func NewApp() (*pomodoroServerApplication, error) {
 
 func (app *pomodoroServerApplication) Init() error {
 
+	// Router
 	router := mux.NewRouter()
-
-	configs := utils.NewConfigurations()
-
+	// Logger
 	logger := utils.NewLogger()
+	// Configuration
+	configs := utils.NewConfigurations(logger)
 
-	// TODO: We should get these property from config
+	//
 	app.router = router
-	app.httpServer.Addr = ":8500"
+	app.httpServer.Addr = configs.ServerAddress
 	app.httpServer.Handler = app.router
 
 	// Auth Package
@@ -57,8 +58,11 @@ func (app *pomodoroServerApplication) Init() error {
 
 func (app *pomodoroServerApplication) StartDB() error {
 
-	// TODO: We should get these property from config
-	dsn := "host=localhost user=postgres password=password dbname=pomodorogo-server port=5432"
+	// TODO:
+	logger := utils.NewLogger()
+	configs := utils.NewConfigurations(logger)
+
+	dsn := "host=" + configs.DBHost + " port=" + configs.DBPort + " user=" + configs.DBUser + " dbname=" + configs.DBName + " password=" + configs.DBPass
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	db.AutoMigrate(&model.User{})
 

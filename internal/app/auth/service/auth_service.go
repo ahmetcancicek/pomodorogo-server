@@ -47,22 +47,17 @@ type AccessTokenCustomClaims struct {
 
 // GenerateAccessToken generates a new access token for the given user
 func (a authService) GenerateAccessToken(user *model.User) (string, error) {
-	// TODO: We must get secret key and time from config file
-	//accessTokenExpireDuration := time.Duration(time.Minute * 5)
-	//accessTokenExpiresTime := time.Now().Add(accessTokenExpireDuration)
-
 	tokenType := "access"
 
 	claims := AccessTokenCustomClaims{
 		user.UUID.String(),
 		tokenType,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * time.Duration(5)).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * time.Duration(a.configs.JwtExpiration)).Unix(),
 			Issuer:    "pomodorogo.auth.service",
 		},
 	}
 
-	// TODO: We must get from config file
 	signBytes, err := ioutil.ReadFile(a.configs.AccessTokenPrivateKeyPath)
 	if err != nil {
 		fmt.Print("Error")
@@ -95,7 +90,6 @@ func (a authService) GenerateRefreshToken(user *model.User) (string, error) {
 		},
 	}
 
-	// TODO: We must get from config file
 	signBytes, err := ioutil.ReadFile(a.configs.RefreshTokenPrivateKeyPath)
 	if err != nil {
 		return "", errors.New("could not generate refresh token. please try again later")

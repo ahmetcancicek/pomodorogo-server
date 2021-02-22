@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/spf13/viper"
+import (
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+)
 
 type Configurations struct {
 	ServerAddress              string
@@ -13,9 +16,10 @@ type Configurations struct {
 	AccessTokenPublicKeyPath   string
 	RefreshTokenPrivateKeyPath string
 	RefreshTokenPublicKeyPath  string
+	JwtExpiration              int
 }
 
-func NewConfigurations() *Configurations {
+func NewConfigurations(logger *logrus.Logger) *Configurations {
 	viper.AutomaticEnv()
 
 	viper.SetDefault("SERVER_ADDRESS", "0.0.0.0:8500")
@@ -28,9 +32,11 @@ func NewConfigurations() *Configurations {
 	viper.SetDefault("ACCESS_TOKEN_PUBLIC_KEY_PATH", "./access-public.pem")
 	viper.SetDefault("REFRESH_TOKEN_PRIVATE_KEY_PATH", "./refresh-private.pem")
 	viper.SetDefault("REFRESH_TOKEN_PUBLIC_KEY_PATH", "./refresh-public.pem")
+	viper.SetDefault("JWT_EXPIRATION", 30)
 
 	configs := &Configurations{
 		ServerAddress:              viper.GetString("SERVER_ADDRESS"),
+		DBHost:                     viper.GetString("DB_HOST"),
 		DBName:                     viper.GetString("DB_NAME"),
 		DBUser:                     viper.GetString("DB_USER"),
 		DBPass:                     viper.GetString("DB_PASSWORD"),
@@ -39,7 +45,14 @@ func NewConfigurations() *Configurations {
 		AccessTokenPublicKeyPath:   viper.GetString("ACCESS_TOKEN_PUBLIC_KEY_PATH"),
 		RefreshTokenPrivateKeyPath: viper.GetString("REFRESH_TOKEN_PRIVATE_KEY_PATH"),
 		RefreshTokenPublicKeyPath:  viper.GetString("REFRESH_TOKEN_PUBLIC_KEY_PATH"),
+		JwtExpiration:              viper.GetInt("JWT_EXPIRATION"),
 	}
+
+	logger.Debug("server port: ", configs.ServerAddress)
+	logger.Debug("db host: ", configs.DBHost)
+	logger.Debug("db name: ", configs.DBName)
+	logger.Debug("db port: ", configs.DBPort)
+	logger.Debug("jwt expiration: ", configs.JwtExpiration)
 
 	return configs
 }
