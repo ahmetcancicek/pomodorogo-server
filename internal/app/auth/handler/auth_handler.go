@@ -81,13 +81,13 @@ func (h AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	user.UpdatedAt = time.Now()
 	err = h.UserService.Save(user)
 	if err != nil {
-		h.logger.Error("unable to insert user to database", "error", err)
+		h.logger.Error("unable to insert user to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignUpFailed}, w)
 	}
 
 	// 6- Respond successful message
-	h.logger.Debug("User created successfully")
+	h.logger.Debug("user created successfully")
 	w.WriteHeader(http.StatusCreated)
 	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "User created successfully", Data: ""}, w)
 
@@ -121,14 +121,14 @@ func (h AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	// 3. Authenticate
 	user, err := h.UserService.FindByEmail(reqUser.Email)
 	if err != nil {
-		h.logger.Error("error fetching the user", "error", err)
+		h.logger.Error("error fetching the user: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed}, w)
 		return
 	}
 
 	if valid := h.AuthService.Authenticate(reqUser.Password, user); !valid {
-		h.logger.Debug("Authentication of user failed")
+		h.logger.Debug("authentication of user failed")
 		w.WriteHeader(http.StatusBadRequest)
 		utils.ToJSON(&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed}, w)
 		return
@@ -137,7 +137,7 @@ func (h AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	// 4. Generate Access Token
 	accessToken, err := h.AuthService.GenerateAccessToken(user)
 	if err != nil {
-		h.logger.Error("unable to generate access token", "error", err)
+		h.logger.Error("unable to generate access token: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"}, w)
 		return
@@ -146,14 +146,14 @@ func (h AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	// 5. Generate Refresh Token
 	refreshToken, err := h.AuthService.GenerateRefreshToken(user)
 	if err != nil {
-		h.logger.Error("unable to generate refresh token", "error", err)
+		h.logger.Error("unable to generate refresh token: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"}, w)
 		return
 	}
 
 	// 6. Respond Token
-	h.logger.Debug("successfully generated token", "accesstoken", accessToken, "refreshtoken", refreshToken)
+	h.logger.Debug("successfully generated token: ", accessToken, refreshToken)
 	w.WriteHeader(http.StatusOK)
 	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Successfully logged in", Data: &dto.AuthSignInResponseDTO{AccessToken: accessToken, RefreshToken: refreshToken}}, w)
 }
