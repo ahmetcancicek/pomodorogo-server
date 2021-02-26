@@ -1,11 +1,11 @@
-package user
+package account
 
 import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 )
 
-// UserRepository represent the user's repository
-type Repository interface {
+// AccountService represent the account's service
+type Service interface {
 	FindByID(id int64) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)

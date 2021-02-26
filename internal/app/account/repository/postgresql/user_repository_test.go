@@ -3,9 +3,9 @@ package postgresql_test
 import (
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/account"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/account/repository/postgresql"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
-	user2 "github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user/repository/postgresql"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
@@ -23,8 +23,8 @@ type Suite struct {
 	DB   *gorm.DB
 	mock sqlmock.Sqlmock
 
-	repository user2.Repository
-	user       *model.User
+	repository account.Repository
+	account    *model.User
 }
 
 func (s *Suite) SetupSuite() {

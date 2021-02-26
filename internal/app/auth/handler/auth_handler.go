@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/account"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/dto"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/user"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -23,11 +23,11 @@ type UserUUIDKey struct{}
 
 type AuthHandler struct {
 	logger      *logrus.Logger
-	UserService user.Service
+	UserService account.Service
 	AuthService auth.Service
 }
 
-func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService user.Service, authService auth.Service) {
+func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService account.Service, authService auth.Service) {
 	handler := &AuthHandler{
 		logger:      logger,
 		UserService: userService,
