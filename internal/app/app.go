@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/account/repository/postgresql"
-	userService "github.com/ahmetcancicek/pomodorogo-server/internal/app/account/service"
+	accountRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/account/repository/postgresql"
+	accountService "github.com/ahmetcancicek/pomodorogo-server/internal/app/account/service"
 	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
 	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
@@ -48,10 +48,10 @@ func (app *pomodoroServerApplication) Init() error {
 	app.httpServer.Handler = app.router
 
 	// Auth Package
-	userRepository := postgresql.NewPostgreSQLAccountRepository(app.db)
-	userLogic := userService.NewAccountService(userRepository)
-	authLogic := authService.NewAuthService(logger, configs)
-	authHandler.NewAuthHandler(router, logger, userLogic, authLogic)
+	accountRepo := accountRepository.NewPostgreSQLAccountRepository(logger, app.db)
+	accountServ := accountService.NewAccountService(accountRepo)
+	authServ := authService.NewAuthService(logger, configs)
+	authHandler.NewAuthHandler(router, logger, accountServ, authServ)
 
 	return nil
 }

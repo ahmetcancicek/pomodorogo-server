@@ -4,7 +4,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 )
 
-// AccountService represent the account's repository
+// AccountRepository represent the account's repository
 type Repository interface {
 	FindByID(id int64) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
