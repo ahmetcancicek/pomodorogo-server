@@ -27,15 +27,16 @@ type AuthHandler struct {
 	AuthService auth.Service
 }
 
-func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService account.Service, authService auth.Service) {
-	handler := &AuthHandler{
+func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService account.Service, authService auth.Service) *AuthHandler {
+	authHandler := &AuthHandler{
 		logger:      logger,
 		UserService: userService,
 		AuthService: authService,
 	}
-	router.HandleFunc("/api/v1/auth/signup", handler.SignUp).Methods(http.MethodPost)
-	router.HandleFunc("/api/v1/auth/signin", handler.SignIn).Methods(http.MethodPost)
-	router.Use(handler.MiddlewareValidateUser)
+	router.HandleFunc("/api/v1/auth/signup", authHandler.SignUp).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/auth/signin", authHandler.SignIn).Methods(http.MethodPost)
+	router.Use(authHandler.MiddlewareValidateUser)
+	return authHandler
 }
 
 func (h AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {

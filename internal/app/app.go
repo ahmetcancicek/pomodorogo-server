@@ -52,7 +52,9 @@ func (app *pomodoroServerApplication) Init() error {
 	accountRepo := accountRepository.NewPostgreSQLAccountRepository(logger, app.db)
 	accountServ := accountService.NewAccountService(accountRepo)
 	authServ := authService.NewAuthService(logger, configs)
-	authHandler.NewAuthHandler(router, logger, accountServ, authServ)
+	authHand := authHandler.NewAuthHandler(router, logger, accountServ, authServ)
+
+	_ = authHand
 
 	// Tag Package
 	tagRepo := tagRepository.NewPostgreSQLTagRepository(logger, app.db)
