@@ -6,7 +6,9 @@ import (
 	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
 	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	tagHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/handler"
 	tagRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/repository/postgresql"
+	tagService "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -43,22 +45,24 @@ func (app *pomodoroServerApplication) Init() error {
 	// Configuration
 	configs := utils.NewConfigurations(logger)
 
-	//
-	app.router = router
-	app.httpServer.Addr = configs.ServerAddress
-	app.httpServer.Handler = app.router
+	// TODO: Refactor Subrouter
 
 	// Auth Package
 	accountRepo := accountRepository.NewPostgreSQLAccountRepository(logger, app.db)
 	accountServ := accountService.NewAccountService(accountRepo)
 	authServ := authService.NewAuthService(logger, configs)
-	authHand := authHandler.NewAuthHandler(router, logger, accountServ, authServ)
-
-	_ = authHand
+	authHand := authHandler.NewAuthHandler(router.NewRoute().Subrouter(), logger, accountServ, authServ)
 
 	// Tag Package
 	tagRepo := tagRepository.NewPostgreSQLTagRepository(logger, app.db)
+	tagServ := tagService.NewTagService(tagRepo)
+	tagHandler.NewTagHandler(router.NewRoute().Subrouter(), logger, tagServ, authHand.MiddlewareValidateAccessToken)
 	_ = tagRepo
+
+	//
+	app.router = router
+	app.httpServer.Addr = configs.ServerAddress
+	app.httpServer.Handler = app.router
 
 	return nil
 }
