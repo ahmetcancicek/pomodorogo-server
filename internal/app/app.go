@@ -6,6 +6,7 @@ import (
 	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
 	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	tagRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/repository/postgresql"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -53,6 +54,10 @@ func (app *pomodoroServerApplication) Init() error {
 	authServ := authService.NewAuthService(logger, configs)
 	authHandler.NewAuthHandler(router, logger, accountServ, authServ)
 
+	// Tag Package
+	tagRepo := tagRepository.NewPostgreSQLTagRepository(logger, app.db)
+	_ = tagRepo
+
 	return nil
 }
 
@@ -65,6 +70,7 @@ func (app *pomodoroServerApplication) StartDB() error {
 	dsn := "host=" + configs.DBHost + " port=" + configs.DBPort + " user=" + configs.DBUser + " dbname=" + configs.DBName + " password=" + configs.DBPass
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Tag{})
 
 	if err != nil {
 		log.Fatal(err)
