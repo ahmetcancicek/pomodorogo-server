@@ -12,5 +12,6 @@ var (
 	ErrUserSignUpFailed  = fmt.Sprintf("Unable to create user. Please try again later")
 	ErrUserAlreadyExists = fmt.Sprintf("User already exists with the given email")
 
-	ErrTagCreateFailed = fmt.Sprintf("Unable to tag user. Please try again later")
+	ErrTagCreateFailed  = fmt.Sprintf("Unable to tag user. Please try again later")
+	ErrTagAlreadyExists = fmt.Sprintf("Tag already exists with the given name")
 )

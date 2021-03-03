@@ -52,13 +52,16 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Check if tag exist in database
-	// TODO:
+	_, err = h.TagService.FindByName(tagDTO.Name)
+	if err == nil {
+		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: model.ErrTagAlreadyExists}, w)
+		return
+	}
 
-	// TODO:
-	_ = r.Context().Value(handler.UserUUIDKey{}).(string)
+	userID := r.Context().Value(handler.UserIDKey{}).(int64)
 
 	tag := new(model.Tag)
-	//tag.UserID = user
+	tag.UserID = userID
 	tag.Name = tagDTO.Name
 	tag.Colour = tagDTO.Colour
 	tag.CreatedAt = time.Now()
@@ -68,11 +71,12 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("unable to insert tag to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrTagCreateFailed}, w)
+		return
 	}
 
 	// 6- Respond successful message
 	h.logger.Debug("tag created successfully")
 	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "User created successfully", Data: tag}, w)
+	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tag}, w)
 
 }
