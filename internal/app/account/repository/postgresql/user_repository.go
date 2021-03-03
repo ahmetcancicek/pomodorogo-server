@@ -13,9 +13,9 @@ type postgreSQLAccountRepository struct {
 	db     *gorm.DB
 }
 
-func NewPostgreSQLAccountRepository(l *logrus.Logger, db *gorm.DB) account.Repository {
+func NewPostgreSQLAccountRepository(log *logrus.Logger, db *gorm.DB) account.Repository {
 	return &postgreSQLAccountRepository{
-		logger: l,
+		logger: log,
 		db:     db,
 	}
 }

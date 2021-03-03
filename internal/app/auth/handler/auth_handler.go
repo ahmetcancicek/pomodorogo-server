@@ -27,19 +27,19 @@ type AuthHandler struct {
 	AuthService auth.Service
 }
 
-func NewAuthHandler(router *mux.Router, logger *logrus.Logger, userService account.Service, authService auth.Service) *AuthHandler {
+func NewAuthHandler(r *mux.Router, log *logrus.Logger, us account.Service, as auth.Service) *AuthHandler {
 	authHandler := &AuthHandler{
-		logger:      logger,
-		UserService: userService,
-		AuthService: authService,
+		logger:      log,
+		UserService: us,
+		AuthService: as,
 	}
-	router.HandleFunc("/api/v1/auth/signup", authHandler.SignUp).Methods(http.MethodPost)
-	router.HandleFunc("/api/v1/auth/signin", authHandler.SignIn).Methods(http.MethodPost)
-	router.Use(authHandler.MiddlewareValidateUser)
+	r.HandleFunc("/api/v1/auth/signup", authHandler.signUp).Methods(http.MethodPost)
+	r.HandleFunc("/api/v1/auth/signin", authHandler.signIn).Methods(http.MethodPost)
+	r.Use(authHandler.MiddlewareValidateUser)
 	return authHandler
 }
 
-func (h AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// TODO: Refactoring
@@ -107,7 +107,7 @@ func (h *AuthHandler) hashPassword(password string) (string, error) {
 	return string(hashedPass), nil
 }
 
-func (h AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
+func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// TODO: Refactoring
