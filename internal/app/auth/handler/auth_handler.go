@@ -21,6 +21,9 @@ type UserKey struct{}
 // UserUUIDKey is used as a key for storing the UserUUID in context at middleware
 type UserUUIDKey struct{}
 
+// UserIDKey is used as a key for storing the UserIDKey in context at middleware
+type UserIDKey struct{}
+
 type AuthHandler struct {
 	logger      *logrus.Logger
 	UserService account.Service

@@ -62,7 +62,10 @@ func (h *AuthHandler) MiddlewareValidateAccessToken(next http.Handler) http.Hand
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserUUIDKey{}, userUUID)
+		user, err := h.UserService.FindByUUID(userUUID)
+
+		ctx := context.WithValue(r.Context(), UserIDKey{}, user.ID)
+		//ctx := context.WithValue(r.Context(), UserUUIDKey{}, userUUID)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
