@@ -25,18 +25,13 @@ func (t tagService) FindByID(id int64) (*model.Tag, error) {
 	return tag, nil
 }
 
-func (t tagService) Save(tag *model.Tag) error {
-
+func (t tagService) Save(tag *model.Tag) (*model.Tag, error) {
 	// TODO: Name control
-	err := t.tagRepository.Save(tag)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	tag, err := t.tagRepository.Save(tag)
+	return tag, err
 }
 
-func (t tagService) Update(tag *model.Tag) error {
+func (t tagService) Update(tag *model.Tag) (*model.Tag, error) {
 	tag.UpdatedAt = time.Now()
 	return t.tagRepository.Update(tag)
 }

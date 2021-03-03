@@ -29,15 +29,15 @@ func (p postgreSQLTagRepository) FindByID(id int64) (*model.Tag, error) {
 
 }
 
-func (p postgreSQLTagRepository) Save(label *model.Tag) error {
+func (p postgreSQLTagRepository) Save(label *model.Tag) (*model.Tag, error) {
 	p.logger.Info("creating tag", label)
 	err := p.db.Create(&label).Error
-	return err
+	return label, err
 }
 
-func (p postgreSQLTagRepository) Update(label *model.Tag) error {
+func (p postgreSQLTagRepository) Update(label *model.Tag) (*model.Tag, error) {
 	// TODO:
-	return nil
+	return label, nil
 }
 
 func (p postgreSQLTagRepository) Delete(id int64) error {

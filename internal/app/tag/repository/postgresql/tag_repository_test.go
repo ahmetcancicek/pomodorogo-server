@@ -89,7 +89,7 @@ func (s *Suite) TestSave() {
 		UpdatedAt: mockUpdatedAt,
 	}
 
-	err := s.repository.Save(tag)
+	tag, err := s.repository.Save(tag)
 
 	require.NoError(s.T(), err)
 
@@ -126,7 +126,7 @@ func (s *Suite) TestUpdate() {
 		UpdatedAt: mockUpdatedAt,
 	}
 
-	err := s.repository.Update(tag)
+	tag, err := s.repository.Update(tag)
 
 	require.NoError(s.T(), err)
 	assert.Equal(s.T(), mockName, tag.Name, "They should be equal!")
