@@ -47,7 +47,6 @@ var (
 	mockColour          = "#000000"
 	mockCreatedAt       = time.Now()
 	mockUpdatedAt       = time.Now()
-	mockDeletedAt       = time.Now()
 )
 
 func TestInit(t *testing.T) {
@@ -74,26 +73,25 @@ func (s *Suite) TestFindByID() {
 	assert.Equal(s.T(), mockID, res.ID, "They should be equal!")
 }
 
-func (s *Suite) TestSave() {
+func (s *Suite) TestFindByName() {
+	mockedRow := sqlmock.NewRows([]string{"id", "name"}).AddRow(mockID, mockName)
 	s.mock.ExpectQuery(regexp.QuoteMeta(
-		`INSERT INTO "tags" ("user_id","name","colour","created_at","updated_at","deleted_at") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "id"`)).
-		WithArgs(mockUserId, mockName, mockColour, mockCreatedAt, mockUpdatedAt, mockDeletedAt).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(mockID))
+		`SELECT * FROM "tags" WHERE name = $1 ORDER BY "tags"."id" LIMIT 1`)).
+		WithArgs(mockName).
+		WillReturnRows(mockedRow)
 
-	tag := &model.Tag{
-		UserID:    mockUserId,
-		Name:      mockName,
-		Colour:    mockColour,
-		CreatedAt: mockCreatedAt,
-		DeletedAt: &mockDeletedAt,
-		UpdatedAt: mockUpdatedAt,
-	}
-
-	tag, err := s.repository.Save(tag)
+	res, err := s.repository.FindByName(mockName)
 
 	require.NoError(s.T(), err)
 
-	assert.Equal(s.T(), mockID, tag.ID, "They should be equal!")
+	assert.Equal(s.T(), mockName, res.Name, "They should be equal!")
+
+	assert.Equal(s.T(), mockID, res.ID, "They should be equal!")
+
+}
+
+func (s *Suite) TestSave() {
+
 }
 
 func (s *Suite) TestDelete() {
@@ -109,8 +107,8 @@ func (s *Suite) TestDelete() {
 
 func (s *Suite) TestUpdate() {
 	s.mock.ExpectQuery(regexp.QuoteMeta(
-		`UPDATE "tags" SET "name" = $1,"colour" = $2,"updated_at" = $3,"deleted_at" = $4 WHERE "id" = $5 RETURNING "id"`)).
-		WithArgs(mockName, mockColour, mockUpdatedAt, mockDeletedAt, mockID).
+		`UPDATE "tags" SET "name" = $1,"colour" = $2,"updated_at" = $3 WHERE "id" = $5 RETURNING "id"`)).
+		WithArgs(mockName, mockColour, mockUpdatedAt, mockID).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(mockID))
 
 	// New value
@@ -122,7 +120,6 @@ func (s *Suite) TestUpdate() {
 		Name:      mockName,
 		Colour:    mockColour,
 		CreatedAt: mockCreatedAt,
-		DeletedAt: &mockDeletedAt,
 		UpdatedAt: mockUpdatedAt,
 	}
 

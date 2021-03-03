@@ -29,6 +29,14 @@ func (p postgreSQLTagRepository) FindByID(id int64) (*model.Tag, error) {
 
 }
 
+func (p postgreSQLTagRepository) FindByName(name string) (*model.Tag, error) {
+	p.logger.Debug("finding for tag with name", name)
+	label := new(model.Tag)
+	err := p.db.Where(`name = ?`, name).First(&label).Error
+	p.logger.Debug("read tag", label)
+	return label, err
+}
+
 func (p postgreSQLTagRepository) Save(label *model.Tag) (*model.Tag, error) {
 	p.logger.Info("creating tag", label)
 	err := p.db.Create(&label).Error

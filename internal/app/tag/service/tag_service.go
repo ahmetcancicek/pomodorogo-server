@@ -25,6 +25,15 @@ func (t tagService) FindByID(id int64) (*model.Tag, error) {
 	return tag, nil
 }
 
+func (t tagService) FindByName(name string) (*model.Tag, error) {
+	tag, err := t.tagRepository.FindByName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return tag, nil
+}
+
 func (t tagService) Save(tag *model.Tag) (*model.Tag, error) {
 	// TODO: Name control
 	tag, err := t.tagRepository.Save(tag)
