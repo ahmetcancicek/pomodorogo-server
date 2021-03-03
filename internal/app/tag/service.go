@@ -1,12 +1,14 @@
 package tag
 
-import "github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+import (
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/dto"
+)
 
 // TagService represent the tag's service
 type Service interface {
-	FindByID(id int64) (*model.Tag, error)
-	FindByName(name string) (*model.Tag, error)
-	Save(tag *model.Tag) (*model.Tag, error)
-	Update(tag *model.Tag) (*model.Tag, error)
+	FindByID(id int64) (*dto.TagDTO, error)
+	FindByName(name string) (*dto.TagDTO, error)
+	Save(tagDTO *dto.TagDTO, userId int64) (*dto.TagDTO, error)
+	Update(tagDTO *dto.TagDTO) (*dto.TagDTO, error)
 	Delete(id int64) error
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"time"
 )
 
 type TagHandler struct {
@@ -25,6 +24,9 @@ func NewTagHandler(r *mux.Router, log *logrus.Logger, ts tag.Service, mf mux.Mid
 	}
 
 	r.HandleFunc("/api/v1/tags", tagHandler.create).Methods(http.MethodPost)
+	r.HandleFunc("/api/v1/tags{id}", tagHandler.read).Methods(http.MethodGet)
+	r.HandleFunc("/api/v1/tags", tagHandler.update).Methods(http.MethodPut)
+	r.HandleFunc("/api/v1/tags", tagHandler.delete).Methods(http.MethodDelete)
 	r.Use(mf)
 }
 
@@ -58,15 +60,10 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := r.Context().Value(handler.UserIDKey{}).(int64)
-
-	tag := new(model.Tag)
-	tag.UserID = userID
-	tag.Name = tagDTO.Name
-	tag.Colour = tagDTO.Colour
-	tag.CreatedAt = time.Now()
-	tag.UpdatedAt = time.Now()
-	tag, err = h.TagService.Save(tag)
+	// TODO:
+	userId := r.Context().Value(handler.UserIDKey{}).(int64)
+	//tagDTO.UserID = userID
+	tagDTO, err = h.TagService.Save(tagDTO, userId)
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -77,6 +74,18 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	// 6- Respond successful message
 	h.logger.Debug("tag created successfully")
 	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tag}, w)
+	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tagDTO}, w)
+
+}
+
+func (h TagHandler) read(writer http.ResponseWriter, request *http.Request) {
+
+}
+
+func (h TagHandler) update(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (h TagHandler) delete(w http.ResponseWriter, r *http.Request) {
 
 }
