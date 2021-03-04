@@ -25,16 +25,16 @@ type UserUUIDKey struct{}
 type UserIDKey struct{}
 
 type AuthHandler struct {
-	logger      *logrus.Logger
-	UserService account.Service
-	AuthService auth.Service
+	logger         *logrus.Logger
+	AccountService account.Service
+	AuthService    auth.Service
 }
 
 func NewAuthHandler(r *mux.Router, log *logrus.Logger, us account.Service, as auth.Service) *AuthHandler {
 	authHandler := &AuthHandler{
-		logger:      log,
-		UserService: us,
-		AuthService: as,
+		logger:         log,
+		AccountService: us,
+		AuthService:    as,
 	}
 	r.HandleFunc("/api/v1/auth/signup", authHandler.signUp).Methods(http.MethodPost)
 	r.HandleFunc("/api/v1/auth/signin", authHandler.signIn).Methods(http.MethodPost)
@@ -51,19 +51,19 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	reqUser := r.Context().Value(UserKey{}).(model.User)
 
 	// 2. Validate
-	err := utils.PayloadValidator(reqUser)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()}, w)
-		return
-	}
+	//err := utils.PayloadValidator(reqUser)
+	//if err != nil {
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()}, w)
+	//	return
+	//}
 
 	// 3. Check if user exist in database
-	_, err = h.UserService.FindByEmail(reqUser.Email)
-	if err == nil {
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: model.ErrUserAlreadyExists}, w)
-		return
-	}
+	//_, err = h.AccountService.FindByEmail(reqUser.Email)
+	//if err == nil {
+	//	utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: model.ErrUserAlreadyExists}, w)
+	//	return
+	//}
 
 	// 4. Password Security
 	hashedPass, err := h.hashPassword(reqUser.Password)
@@ -85,11 +85,12 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	user.TokenHash = tokenHash
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	err = h.UserService.Save(user)
+	err = h.AccountService.Save(user)
 	if err != nil {
 		h.logger.Error("unable to insert user to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignUpFailed}, w)
+		return
 	}
 
 	// 6- Respond successful message
@@ -127,7 +128,7 @@ func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Authenticate
-	user, err := h.UserService.FindByEmail(reqUser.Email)
+	user, err := h.AccountService.FindByEmail(reqUser.Email)
 	if err != nil {
 		h.logger.Error("error fetching the user: ", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/account"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
+	"github.com/go-playground/validator/v10"
 	"time"
 )
 
@@ -49,10 +52,28 @@ func (u accountService) Update(user *model.User) error {
 	return u.accountRepository.Update(user)
 }
 
+func (u accountService) validate(user *model.User) error {
+	err := utils.PayloadValidator(user)
+	if err != nil {
+		return errors.New(err.(validator.ValidationErrors).Error())
+	}
+	return nil
+}
+
 func (u accountService) Save(user *model.User) error {
 
-	// TODO: Username, email control
-	err := u.accountRepository.Save(user)
+	err := u.validate(user)
+	if err != nil {
+		return err
+	}
+
+	_, err = u.FindByEmail(user.Email)
+	if err == nil {
+		return errors.New(model.ErrTagAlreadyExists)
+	}
+
+	// TODO: Username control
+	err = u.accountRepository.Save(user)
 	if err != nil {
 		return err
 	}

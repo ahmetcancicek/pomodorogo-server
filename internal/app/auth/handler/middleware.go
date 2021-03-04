@@ -62,7 +62,7 @@ func (h *AuthHandler) MiddlewareValidateAccessToken(next http.Handler) http.Hand
 			return
 		}
 
-		user, err := h.UserService.FindByUUID(userUUID)
+		user, err := h.AccountService.FindByUUID(userUUID)
 
 		ctx := context.WithValue(r.Context(), UserIDKey{}, user.ID)
 		//ctx := context.WithValue(r.Context(), UserUUIDKey{}, userUUID)
@@ -93,7 +93,7 @@ func (h *AuthHandler) MiddlewareValidateRefreshToken(next http.Handler) http.Han
 			return
 		}
 
-		user, err := h.UserService.FindByUUID(userUUID)
+		user, err := h.AccountService.FindByUUID(userUUID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: "Authentication failed. Invalid token"}, w)
