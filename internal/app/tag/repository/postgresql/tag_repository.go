@@ -20,7 +20,7 @@ func NewPostgreSQLTagRepository(l *logrus.Logger, db *gorm.DB) tag.Repository {
 	}
 }
 
-func (p postgreSQLTagRepository) FindByID(id int64) (*model.Tag, error) {
+func (p postgreSQLTagRepository) FindByID(id uint) (*model.Tag, error) {
 	p.logger.Debug("finding for tag with id", id)
 	label := new(model.Tag)
 	err := p.db.Where(`id = ?`, id).First(&label).Error
@@ -48,7 +48,7 @@ func (p postgreSQLTagRepository) Update(label *model.Tag) (*model.Tag, error) {
 	return label, nil
 }
 
-func (p postgreSQLTagRepository) Delete(id int64) error {
+func (p postgreSQLTagRepository) Delete(id uint) error {
 	p.logger.Info("deleting tag with id", id)
 	err := p.db.Delete(&model.Tag{}, id).Error
 	return err

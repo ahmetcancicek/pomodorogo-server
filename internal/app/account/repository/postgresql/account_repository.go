@@ -20,7 +20,7 @@ func NewPostgreSQLAccountRepository(log *logrus.Logger, db *gorm.DB) account.Rep
 	}
 }
 
-func (p postgreSQLAccountRepository) FindByID(id int64) (*model.User, error) {
+func (p postgreSQLAccountRepository) FindByID(id uint) (*model.User, error) {
 	p.logger.Debug("finding for user with id", id)
 	user := new(model.User)
 	err := p.db.Where(`id = ?`, id).First(&user).Error
@@ -63,7 +63,7 @@ func (p postgreSQLAccountRepository) Save(user *model.User) error {
 	return err
 }
 
-func (p postgreSQLAccountRepository) Delete(id int64) error {
+func (p postgreSQLAccountRepository) Delete(id uint) error {
 	p.logger.Info("deleting user with id", id)
 	err := p.db.Delete(&model.User{}, id).Error
 	return err

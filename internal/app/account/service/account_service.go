@@ -21,7 +21,7 @@ func NewAccountService(accountRepository account.Repository) account.Service {
 	}
 }
 
-func (u accountService) FindByID(id int64) (*model.User, error) {
+func (u accountService) FindByID(id uint) (*model.User, error) {
 	user, err := u.accountRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (u accountService) Save(user *model.User) error {
 	return nil
 }
 
-func (u accountService) Delete(id int64) error {
+func (u accountService) Delete(id uint) error {
 	user, err := u.accountRepository.FindByID(id)
 	if err != nil {
 		return err

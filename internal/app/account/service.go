@@ -6,11 +6,11 @@ import (
 
 // AccountService represent the account's service
 type Service interface {
-	FindByID(id int64) (*model.User, error)
+	FindByID(id uint) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
 	FindByUsername(username string) (*model.User, error)
 	Update(user *model.User) error
 	Save(user *model.User) error
-	Delete(id int64) error
+	Delete(id uint) error
 }

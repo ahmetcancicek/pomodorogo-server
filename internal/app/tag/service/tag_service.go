@@ -20,7 +20,7 @@ func NewTagService(tagRepository tag.Repository) tag.Service {
 	}
 }
 
-func (t tagService) FindByID(id int64) (*dto.TagDTO, error) {
+func (t tagService) FindByID(id uint) (*dto.TagDTO, error) {
 	tag, err := t.tagRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (t tagService) validate(tagDTO *dto.TagDTO) error {
 	return nil
 }
 
-func (t tagService) Save(tagDTO *dto.TagDTO, userId int64) (*dto.TagDTO, error) {
+func (t tagService) Save(tagDTO *dto.TagDTO, userId uint) (*dto.TagDTO, error) {
 
 	err := t.validate(tagDTO)
 	if err != nil {
@@ -72,7 +72,7 @@ func (t tagService) Update(tagDTO *dto.TagDTO) (*dto.TagDTO, error) {
 	return dto.ToTagDTO(tag), err
 }
 
-func (t tagService) Delete(id int64) error {
+func (t tagService) Delete(id uint) error {
 	tag, err := t.tagRepository.FindByID(id)
 	if err != nil {
 		return err

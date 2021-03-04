@@ -6,6 +6,7 @@ import (
 
 // Tag ...
 type TagDTO struct {
+	ID     uint   `json:"id"`
 	Name   string `json:"name" validate:"max=50"`
 	Colour string `json:"colour" validate:"max=7"`
 }
@@ -13,6 +14,7 @@ type TagDTO struct {
 // ToTag ...
 func ToTag(tagDTO *TagDTO) *model.Tag {
 	return &model.Tag{
+		ID:     tagDTO.ID,
 		Name:   tagDTO.Name,
 		Colour: tagDTO.Colour,
 	}
@@ -21,6 +23,7 @@ func ToTag(tagDTO *TagDTO) *model.Tag {
 // ToTagDTO ...
 func ToTagDTO(tag *model.Tag) *TagDTO {
 	return &TagDTO{
+		ID:     tag.ID,
 		Name:   tag.Name,
 		Colour: tag.Colour,
 	}

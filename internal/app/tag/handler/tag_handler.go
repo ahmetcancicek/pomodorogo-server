@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 )
 
 type TagHandler struct {
@@ -23,9 +24,9 @@ func NewTagHandler(r *mux.Router, log *logrus.Logger, ts tag.Service, mf mux.Mid
 	}
 
 	r.HandleFunc("/api/v1/tags", tagHandler.create).Methods(http.MethodPost)
-	r.HandleFunc("/api/v1/tags{id}", tagHandler.read).Methods(http.MethodGet)
+	r.HandleFunc("/api/v1/tags/{id}", tagHandler.read).Methods(http.MethodGet)
 	r.HandleFunc("/api/v1/tags", tagHandler.update).Methods(http.MethodPut)
-	r.HandleFunc("/api/v1/tags", tagHandler.delete).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v1/tags/{id}", tagHandler.delete).Methods(http.MethodDelete)
 	r.Use(mf)
 }
 
@@ -45,11 +46,11 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	// 2. Save
-	userId := r.Context().Value(handler.UserIDKey{}).(int64)
+	userId := r.Context().Value(handler.UserIDKey{}).(uint)
 	tagDTO, err = h.TagService.Save(tagDTO, userId)
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
 		return
 	}
@@ -61,8 +62,36 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h TagHandler) read(writer http.ResponseWriter, request *http.Request) {
+func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	tagDTO := new(dto.TagDTO)
+
+	// Integer control
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		h.logger.Error("unable to get parameter because of variable type: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		return
+	}
+
+	// TODO: Control whatever have or has
+
+	// 2. Get
+	tagDTO, err = h.TagService.FindByID(uint(id))
+	if err != nil {
+		h.logger.Error("unable to get tag to database: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		return
+	}
+
+	// 3- Respond successful message
+	h.logger.Debug("tag got successfully")
+	w.WriteHeader(http.StatusCreated)
+	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag got successfully", Data: tagDTO}, w)
 }
 
 func (h TagHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -70,5 +99,31 @@ func (h TagHandler) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h TagHandler) delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	// Integer control
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		h.logger.Error("unable to get parameter because of variable type: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		return
+	}
+
+	// TODO: Control whatever have or has
+
+	// 2. Delete
+	err = h.TagService.Delete(uint(id))
+	if err != nil {
+		h.logger.Error("unable to get tag to database: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		return
+	}
+
+	// 3- Respond successful message
+	h.logger.Debug("tag deleted successfully")
+	w.WriteHeader(http.StatusCreated)
+	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag deleted successfully", Data: ""}, w)
 }

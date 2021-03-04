@@ -44,16 +44,16 @@ func (s *Suite) SetupSuite() {
 }
 
 var (
-	mockID        int64 = 123456
-	mockUUID            = uuid.NewV4()
-	mockFirstName       = "FirstName"
-	mockLastName        = "LastName"
-	mockUsername        = "username"
-	mockEmail           = "email@email.com"
-	mockTokenHash       = utils.GenerateRandomString(15)
-	mockPassword        = "password"
-	mockCreatedAt       = time.Now()
-	mockUpdatedAt       = time.Now()
+	mockID        uint = 123456
+	mockUUID           = uuid.NewV4()
+	mockFirstName      = "FirstName"
+	mockLastName       = "LastName"
+	mockUsername       = "username"
+	mockEmail          = "email@email.com"
+	mockTokenHash      = utils.GenerateRandomString(15)
+	mockPassword       = "password"
+	mockCreatedAt      = time.Now()
+	mockUpdatedAt      = time.Now()
 )
 
 func TestInit(t *testing.T) {
@@ -186,7 +186,7 @@ func (s *Suite) TestSave() {
 
 func (s *Suite) TestDelete() {
 	var (
-		id int64 = 123456
+		id uint = 123456
 	)
 
 	s.mock.ExpectExec(regexp.QuoteMeta(`DELETE FROM "users" WHERE "users"."id" = $1`)).WithArgs(id).WillReturnResult(sqlmock.NewResult(1, 1))

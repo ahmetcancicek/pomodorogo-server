@@ -41,12 +41,12 @@ func (s *Suite) SetupSuite() {
 }
 
 var (
-	mockID        int64 = 12345
-	mockUserId    int64 = 12345
-	mockName            = "Name"
-	mockColour          = "#000000"
-	mockCreatedAt       = time.Now()
-	mockUpdatedAt       = time.Now()
+	mockID        uint = 12345
+	mockUserId    uint = 12345
+	mockName           = "Name"
+	mockColour         = "#000000"
+	mockCreatedAt      = time.Now()
+	mockUpdatedAt      = time.Now()
 )
 
 func TestInit(t *testing.T) {
@@ -96,7 +96,7 @@ func (s *Suite) TestSave() {
 
 func (s *Suite) TestDelete() {
 	var (
-		id int64 = 123456
+		id uint = 123456
 	)
 
 	s.mock.ExpectExec(regexp.QuoteMeta(`DELETE FROM "tags" WHERE "tags"."id" = $1`)).WithArgs(id).WillReturnResult(sqlmock.NewResult(1, 1))
