@@ -6,6 +6,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/go-playground/validator/v10"
+	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
@@ -73,6 +74,9 @@ func (u accountService) Save(user *model.User) error {
 	}
 
 	// TODO: Username control
+	user.UUID = uuid.NewV4()
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 	err = u.accountRepository.Save(user)
 	if err != nil {
 		return err

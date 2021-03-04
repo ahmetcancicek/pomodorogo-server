@@ -8,11 +8,9 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
-	"time"
 )
 
 // UserKey is used as a key for storing the User object in context at middleware
@@ -45,28 +43,11 @@ func NewAuthHandler(r *mux.Router, log *logrus.Logger, us account.Service, as au
 func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// TODO: Refactoring
-
 	// 1. Decode request body
-	reqUser := r.Context().Value(UserKey{}).(model.User)
+	user := r.Context().Value(UserKey{}).(model.User)
 
-	// 2. Validate
-	//err := utils.PayloadValidator(reqUser)
-	//if err != nil {
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()}, w)
-	//	return
-	//}
-
-	// 3. Check if user exist in database
-	//_, err = h.AccountService.FindByEmail(reqUser.Email)
-	//if err == nil {
-	//	utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: model.ErrUserAlreadyExists}, w)
-	//	return
-	//}
-
-	// 4. Password Security
-	hashedPass, err := h.hashPassword(reqUser.Password)
+	// 2. Password Security
+	hashedPass, err := h.hashPassword(user.Password)
 	tokenHash := utils.GenerateRandomString(15)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -74,18 +55,10 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 5. Create new user
-	user := new(model.User)
-	user.UUID = uuid.NewV4()
-	user.FirstName = reqUser.FirstName
-	user.LastName = reqUser.LastName
-	user.Username = reqUser.Username
-	user.Email = reqUser.Email
+	// 3. Save
 	user.Password = hashedPass
 	user.TokenHash = tokenHash
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-	err = h.AccountService.Save(user)
+	err = h.AccountService.Save(&user)
 	if err != nil {
 		h.logger.Error("unable to insert user to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -93,28 +66,23 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 6- Respond successful message
+	// 4- Respond successful message
 	h.logger.Debug("user created successfully")
 	w.WriteHeader(http.StatusCreated)
 	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "User created successfully", Data: ""}, w)
-
 }
 
 func (h *AuthHandler) hashPassword(password string) (string, error) {
-
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		//ah.logger.Error("unable to hash password", "error", err)
+		h.logger.Error("unable to hash password", "error", err)
 		return "", err
 	}
-
 	return string(hashedPass), nil
 }
 
 func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
-	// TODO: Refactoring
 
 	// 1. Decode request body
 	reqUser := r.Context().Value(UserKey{}).(model.User)
