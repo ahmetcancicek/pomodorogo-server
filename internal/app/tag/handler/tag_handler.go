@@ -6,7 +6,6 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/tag"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/dto"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -45,33 +44,17 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// 2. Validate
-	err = utils.PayloadValidator(tagDTO)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()}, w)
-		return
-	}
-
-	// 3. Check if tag exist in database
-	_, err = h.TagService.FindByName(tagDTO.Name)
-	if err == nil {
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: model.ErrTagAlreadyExists}, w)
-		return
-	}
-
-	// TODO:
+	// 2. Save
 	userId := r.Context().Value(handler.UserIDKey{}).(int64)
-	//tagDTO.UserID = userID
 	tagDTO, err = h.TagService.Save(tagDTO, userId)
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrTagCreateFailed}, w)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
 		return
 	}
 
-	// 6- Respond successful message
+	// 3- Respond successful message
 	h.logger.Debug("tag created successfully")
 	w.WriteHeader(http.StatusCreated)
 	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tagDTO}, w)

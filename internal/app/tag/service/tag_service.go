@@ -1,9 +1,12 @@
 package service
 
 import (
+	"errors"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/tag"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/dto"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/utils"
+	"github.com/go-playground/validator/v10"
 	"time"
 )
 
@@ -35,11 +38,29 @@ func (t tagService) FindByName(name string) (*dto.TagDTO, error) {
 	return dto.ToTagDTO(tag), err
 }
 
+func (t tagService) validate(tagDTO *dto.TagDTO) error {
+	err := utils.PayloadValidator(tagDTO)
+	if err != nil {
+		return errors.New(err.(validator.ValidationErrors).Error())
+	}
+	return nil
+}
+
 func (t tagService) Save(tagDTO *dto.TagDTO, userId int64) (*dto.TagDTO, error) {
-	// TODO: Name control
+
+	err := t.validate(tagDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = t.FindByName(tagDTO.Name)
+	if err == nil {
+		return nil, errors.New(model.ErrTagAlreadyExists)
+	}
+
 	tag := dto.ToTag(tagDTO)
 	tag.UserID = userId
-	tag, err := t.tagRepository.Save(tag)
+	tag, err = t.tagRepository.Save(tag)
 	return dto.ToTagDTO(tag), err
 }
 
