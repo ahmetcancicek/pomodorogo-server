@@ -37,9 +37,17 @@ func (p postgreSQLAccountRepository) FindByUUID(uuid string) (*model.User, error
 }
 
 func (p postgreSQLAccountRepository) FindByEmail(email string) (*model.User, error) {
-	p.logger.Debug("finding for email with uuid", email)
+	p.logger.Debug("finding for user with email", email)
 	user := new(model.User)
 	err := p.db.Where(`email = ?`, email).First(&user).Error
+	p.logger.Debug("read user", user)
+	return user, err
+}
+
+func (p postgreSQLAccountRepository) FindByUsername(username string) (*model.User, error) {
+	p.logger.Debug("finding for user with username", username)
+	user := new(model.User)
+	err := p.db.Where(`username = ?`, username).First(&user).Error
 	p.logger.Debug("read user", user)
 	return user, err
 }

@@ -48,6 +48,15 @@ func (u accountService) FindByEmail(email string) (*model.User, error) {
 	return user, nil
 }
 
+func (u accountService) FindByUsername(username string) (*model.User, error) {
+	user, err := u.accountRepository.FindByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (u accountService) Update(user *model.User) error {
 	user.UpdatedAt = time.Now()
 	return u.accountRepository.Update(user)
@@ -70,10 +79,14 @@ func (u accountService) Save(user *model.User) error {
 
 	_, err = u.FindByEmail(user.Email)
 	if err == nil {
-		return errors.New(model.ErrTagAlreadyExists)
+		return errors.New(model.ErrUserEmailAlreadyExists)
 	}
 
-	// TODO: Username control
+	_, err = u.FindByUsername(user.Username)
+	if err == nil {
+		return errors.New(model.ErrUserUsernameAlreadyExists)
+	}
+
 	user.UUID = uuid.NewV4()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()

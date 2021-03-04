@@ -62,7 +62,7 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("unable to insert user to database: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignUpFailed}, w)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
 		return
 	}
 

@@ -113,6 +113,22 @@ func (s *Suite) TestFindByEmail() {
 	assert.Equal(s.T(), mockEmail, res.Email, "They should be equal!")
 }
 
+func (s *Suite) TestFindByUsername() {
+	mockedRow := sqlmock.NewRows([]string{"id", "first_name", "username"}).AddRow(mockID, mockFirstName, mockUsername)
+	s.mock.ExpectQuery(regexp.QuoteMeta(
+		`SELECT * FROM "users" WHERE username = $1 ORDER BY "users"."id" LIMIT 1`)).
+		WithArgs(mockUsername).
+		WillReturnRows(mockedRow)
+
+	res, err := s.repository.FindByUsername(mockUsername)
+
+	require.NoError(s.T(), err)
+
+	assert.Equal(s.T(), mockFirstName, res.FirstName, "They should be equal!")
+
+	assert.Equal(s.T(), mockUsername, res.Username, "They should be equal!")
+}
+
 func (s *Suite) TestUpdate() {
 
 	s.mock.ExpectQuery(regexp.QuoteMeta(
