@@ -90,6 +90,14 @@ func (s *Suite) TestFindByName() {
 
 }
 
+func (s *Suite) TestFindByIDAndUser() {
+
+}
+
+func (s *Suite) TestDeleteByIDAndUser() {
+
+}
+
 func (s *Suite) TestSave() {
 
 }

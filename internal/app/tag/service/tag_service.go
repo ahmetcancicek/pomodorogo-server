@@ -38,6 +38,23 @@ func (t tagService) FindByName(name string) (*dto.TagDTO, error) {
 	return dto.ToTagDTO(tag), err
 }
 
+func (t tagService) FindByNameAndUser(name string, userId uint) (*dto.TagDTO, error) {
+	tag, err := t.tagRepository.FindByNameAndUser(name, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.ToTagDTO(tag), err
+}
+
+func (t tagService) FindByIDAndUser(id uint, userId uint) (*dto.TagDTO, error) {
+	tag, err := t.tagRepository.FindByIDAndUser(id, userId)
+	if err != nil {
+		return nil, err
+	}
+	return dto.ToTagDTO(tag), err
+}
+
 func (t tagService) validate(tagDTO *dto.TagDTO) error {
 	err := utils.PayloadValidator(tagDTO)
 	if err != nil {
@@ -53,7 +70,7 @@ func (t tagService) Save(tagDTO *dto.TagDTO, userId uint) (*dto.TagDTO, error) {
 		return nil, err
 	}
 
-	_, err = t.FindByName(tagDTO.Name)
+	_, err = t.FindByNameAndUser(tagDTO.Name, userId)
 	if err == nil {
 		return nil, errors.New(model.ErrTagAlreadyExists)
 	}
@@ -73,14 +90,11 @@ func (t tagService) Update(tagDTO *dto.TagDTO) (*dto.TagDTO, error) {
 }
 
 func (t tagService) Delete(id uint) error {
-	tag, err := t.tagRepository.FindByID(id)
-	if err != nil {
-		return err
-	}
+	err := t.tagRepository.Delete(id)
+	return err
+}
 
-	if tag == nil {
-		return model.ErrNotFound
-	}
-
-	return t.tagRepository.Delete(id)
+func (t tagService) DeleteByIDAndUser(id uint, userId uint) error {
+	err := t.tagRepository.DeleteByIDAndUser(id, userId)
+	return err
 }

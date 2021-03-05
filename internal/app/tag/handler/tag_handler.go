@@ -77,10 +77,10 @@ func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Control whatever have or has
+	userId := r.Context().Value(handler.UserIDKey{}).(uint)
 
 	// 2. Get
-	tagDTO, err = h.TagService.FindByID(uint(id))
+	tagDTO, err = h.TagService.FindByIDAndUser(uint(id), userId)
 	if err != nil {
 		h.logger.Error("unable to get tag to database: ", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -111,10 +111,10 @@ func (h TagHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Control whatever have or has
+	userId := r.Context().Value(handler.UserIDKey{}).(uint)
 
 	// 2. Delete
-	err = h.TagService.Delete(uint(id))
+	err = h.TagService.DeleteByIDAndUser(uint(id), userId)
 	if err != nil {
 		h.logger.Error("unable to get tag to database: ", err)
 		w.WriteHeader(http.StatusBadRequest)
