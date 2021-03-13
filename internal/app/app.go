@@ -75,14 +75,25 @@ func (app *pomodoroServerApplication) StartDB() error {
 
 	dsn := "host=" + configs.DBHost + " port=" + configs.DBPort + " user=" + configs.DBUser + " dbname=" + configs.DBName + " password=" + configs.DBPass
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.Tag{})
-
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	app.db = db
 
+	err = app.Migrate()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func (app *pomodoroServerApplication) Migrate() error {
+	err := app.db.AutoMigrate(&model.User{}, &model.Tag{}, &model.Setting{}, &model.Statistic{})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
