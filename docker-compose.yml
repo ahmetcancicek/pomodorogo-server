@@ -15,15 +15,16 @@ services:
   pomodorogo-server:
     container_name: pomodorogo-server
     restart: always
+    environment:
+      DB_HOST: postgres
+      DB_NAME: pomodorogo-server
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_PORT: 5432
     build:
       context: .
+      dockerfile: Dockerfile
     depends_on:
       - postgres
     ports:
       - 8500:8500
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
