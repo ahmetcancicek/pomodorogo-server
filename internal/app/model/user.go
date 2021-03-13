@@ -18,4 +18,5 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Tag       Tag
+	Setting   Setting
 }
