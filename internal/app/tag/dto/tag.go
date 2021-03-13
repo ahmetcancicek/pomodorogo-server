@@ -4,7 +4,7 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 )
 
-// Tag ...
+// TagDTO ...
 type TagDTO struct {
 	ID     uint   `json:"id"`
 	Name   string `json:"name" validate:"max=50"`
