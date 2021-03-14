@@ -7,12 +7,13 @@ released under the terms of the GNU. PomodoroGo Server develops with Go programm
 
 |Method  |Path                 |Description         |   |   |
 |---     |---                  |---                 |---|---|
-|Post    |/v1/auth/signup      |                    |   |   |
-|Post    |/v1/auth/signin      |                    |   |   |
-|Post    |/api/v1/tags         |                    |   |   |
+|POST    |/v1/auth/signup      |                    |   |   |
+|POST    |/v1/auth/signin      |                    |   |   |
+|POST    |/api/v1/tags         |                    |   |   |
 |GET     |/api/v1/tags/{id}    |                    |   |   |
 |PUT     |/api/v1/tags         |                    |   |   |
 |DELETE  |/api/v1/tags/{id}    |                    |   |   |
+|POST    |/api/v1/statistics   |                    |   |   |
 
 
 ## Environment
