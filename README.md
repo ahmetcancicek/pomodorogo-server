@@ -6,14 +6,14 @@ released under the terms of the GNU. PomodoroGo Server develops with Go programm
 ## API Endpoint
 
 |Method  |Path                 |Description         |   |   |
-|---     |---                  |---                 |---|---|
-|POST    |/v1/auth/signup      |                    |   |   |
-|POST    |/v1/auth/signin      |                    |   |   |
-|POST    |/api/v1/tags         |                    |   |   |
-|GET     |/api/v1/tags/{id}    |                    |   |   |
-|PUT     |/api/v1/tags         |                    |   |   |
-|DELETE  |/api/v1/tags/{id}    |                    |   |   |
-|POST    |/api/v1/statistics   |                    |   |   |
+|---     |---                       |---                 |---|---|
+|POST    |/v1/auth/signup           |                    |   |   |
+|POST    |/v1/auth/signin           |                    |   |   |
+|POST    |/api/v1/tags              |                    |   |   |
+|GET     |/api/v1/tags/{id}         |                    |   |   |
+|PUT     |/api/v1/tags              |                    |   |   |
+|DELETE  |/api/v1/tags/{id}         |                    |   |   |
+|POST    |/api/v1/pomodoro          |                    |   |   |
 
 
 ## Environment
@@ -31,6 +31,20 @@ released under the terms of the GNU. PomodoroGo Server develops with Go programm
 * $DB_NAME
 * $DB_PASSWORD
 * $DB_PORT
+
+## RSA KEY
+
+#### Generate Private Key
+```shell
+openssl genrsa -out access-private.pem 2048
+openssl genrsa -out refresh-private.pem 2048
+```
+
+#### Generate Public Key
+```shell
+openssl rsa -in access-private.pem -outform PEM -pubout -out access-public.pem
+openssl rsa -in refresh-private.pem -outform PEM -pubout -out refresh-public.pem
+```
 
 ## Development 
 
