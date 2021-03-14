@@ -23,10 +23,11 @@ func NewTagHandler(r *mux.Router, log *logrus.Logger, ts tag.Service, mf mux.Mid
 		TagService: ts,
 	}
 
+	// TODO: Should add filter for integer control
 	r.HandleFunc("/api/v1/tags", tagHandler.create).Methods(http.MethodPost)
-	r.HandleFunc("/api/v1/tags/{id}", tagHandler.read).Methods(http.MethodGet)
+	r.HandleFunc("/api/v1/tags/{id:[0-9]+}", tagHandler.read).Methods(http.MethodGet)
 	r.HandleFunc("/api/v1/tags", tagHandler.update).Methods(http.MethodPut)
-	r.HandleFunc("/api/v1/tags/{id}", tagHandler.delete).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v1/tags/{id:[0-9]+}", tagHandler.delete).Methods(http.MethodDelete)
 	r.Use(mf)
 }
 
@@ -38,7 +39,7 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	// 1. Decode request body
 	err := utils.FromJSON(tagDTO, r.Body)
 	if err != nil {
-		h.logger.Error("unable to decode user json", err.Error())
+		h.logger.Error("unable to decode tag json", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()}, w)
 		return
@@ -51,11 +52,11 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
 		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.ToJSON(model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()}, w)
 		return
 	}
 
-	// 3- Respond successful message
+	// 3. Respond successful message
 	h.logger.Debug("tag created successfully")
 	w.WriteHeader(http.StatusCreated)
 	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tagDTO}, w)
