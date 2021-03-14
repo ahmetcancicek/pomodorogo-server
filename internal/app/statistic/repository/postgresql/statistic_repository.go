@@ -13,9 +13,9 @@ type postgreSQLStatisticRepository struct {
 	db     *gorm.DB
 }
 
-func NewPostgreSQLStatisticRepository(l *logrus.Logger, db *gorm.DB) statistic.Repository {
+func NewPostgreSQLStatisticRepository(log *logrus.Logger, db *gorm.DB) statistic.Repository {
 	return &postgreSQLStatisticRepository{
-		logger: l,
+		logger: log,
 		db:     db,
 	}
 }
