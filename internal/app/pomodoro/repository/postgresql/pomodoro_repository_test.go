@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
-	"github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic"
-	postgresql2 "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/repository/postgresql"
+	"github.com/ahmetcancicek/pomodorogo-server/internal/app/pomodoro"
+	postgresql2 "github.com/ahmetcancicek/pomodorogo-server/internal/app/pomodoro/repository/postgresql"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/postgres"
@@ -18,8 +18,8 @@ type Suite struct {
 	DB   *gorm.DB
 	mock sqlmock.Sqlmock
 
-	repository statistic.Repository
-	statistic  *model.Statistic
+	repository pomodoro.Repository
+	statistic  *model.Pomodoro
 }
 
 func (s *Suite) SetupSuite() {

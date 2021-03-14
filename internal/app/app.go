@@ -6,9 +6,9 @@ import (
 	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
 	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
-	statisticHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/handler"
-	statisticRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/repository/postgresql"
-	statisticService "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/service"
+	pomodoroHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/pomodoro/handler"
+	pomodoroRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/pomodoro/repository/postgresql"
+	pomodoroService "github.com/ahmetcancicek/pomodorogo-server/internal/app/pomodoro/service"
 	tagHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/handler"
 	tagRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/repository/postgresql"
 	tagService "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/service"
@@ -61,10 +61,10 @@ func (app *pomodoroServerApplication) Init() error {
 	tagServ := tagService.NewTagService(tagRepo)
 	tagHandler.NewTagHandler(router.NewRoute().Subrouter(), logger, tagServ, authHand.MiddlewareValidateAccessToken)
 
-	// Statistic Package
-	statRepo := statisticRepository.NewPostgreSQLStatisticRepository(logger, app.db)
-	statServ := statisticService.NewStatisticService(statRepo, tagRepo)
-	statisticHandler.NewStatisticHandler(router.NewRoute().Subrouter(), logger, statServ, authHand.MiddlewareValidateAccessToken)
+	// Pomodoro Package
+	pomodoroRepo := pomodoroRepository.NewPostgreSQLPomodoroRepository(logger, app.db)
+	pomodoroServ := pomodoroService.NewStatisticService(pomodoroRepo, tagRepo)
+	pomodoroHandler.NewStatisticHandler(router.NewRoute().Subrouter(), logger, pomodoroServ, authHand.MiddlewareValidateAccessToken)
 
 	//
 	app.router = router
@@ -97,7 +97,7 @@ func (app *pomodoroServerApplication) StartDB() error {
 }
 
 func (app *pomodoroServerApplication) Migrate() error {
-	err := app.db.AutoMigrate(&model.User{}, &model.Tag{}, &model.Setting{}, &model.Statistic{})
+	err := app.db.AutoMigrate(&model.User{}, &model.Tag{}, &model.Setting{}, &model.Pomodoro{})
 	if err != nil {
 		return err
 	}

@@ -12,5 +12,5 @@ type Tag struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	UserID    uint
-	Statistic Statistic
+	Statistic Pomodoro
 }

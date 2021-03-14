@@ -16,5 +16,5 @@ var (
 	ErrTagCreateFailed  = fmt.Sprintf("Unable to tag user. Please try again later")
 	ErrTagAlreadyExists = fmt.Sprintf("Tag already exists with the given name")
 
-	ErrStatisticTagDoesNotExists = fmt.Sprintf("No tag exists for statistic")
+	ErrPomodoroTagDoesNotExists = fmt.Sprintf("No tag exists for work duration")
 )
