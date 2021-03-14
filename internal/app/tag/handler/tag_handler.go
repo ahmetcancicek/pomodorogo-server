@@ -23,7 +23,6 @@ func NewTagHandler(r *mux.Router, log *logrus.Logger, ts tag.Service, mf mux.Mid
 		TagService: ts,
 	}
 
-	// TODO: Should add filter for integer control
 	r.HandleFunc("/api/v1/tags", tagHandler.create).Methods(http.MethodPost)
 	r.HandleFunc("/api/v1/tags/{id:[0-9]+}", tagHandler.read).Methods(http.MethodGet)
 	r.HandleFunc("/api/v1/tags", tagHandler.update).Methods(http.MethodPut)
