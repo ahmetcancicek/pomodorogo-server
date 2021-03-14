@@ -17,3 +17,5 @@ func FromJSON(i interface{}, r io.Reader) error {
 	d := json.NewDecoder(r)
 	return d.Decode(i)
 }
+
+// TODO: We should create specific struct for respond with JSON and respond with error
