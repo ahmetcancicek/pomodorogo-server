@@ -5,7 +5,7 @@ import "time"
 // Statistics ...
 type Statistic struct {
 	ID         uint      `json:"id"`
-	StartedAt  time.Time `json:"startedAt"`
-	FinishedAt time.Time `json:"finishedAt"`
+	StartTime  time.Time `json:"startTime"`
+	FinishTime time.Time `json:"finishTime"`
 	TagID      uint
 }

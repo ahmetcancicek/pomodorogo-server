@@ -8,17 +8,18 @@ import (
 // StatisticDTO ...
 type StatisticDTO struct {
 	ID         uint      `json:"id"`
-	StartedAt  time.Time `json:"startedAt"`
-	FinishedAt time.Time `json:"finishedAt"`
-	TagID      uint
+	StartTime  time.Time `json:"startTime"`
+	FinishTime time.Time `json:"finishTime"`
+	TagID      uint      `json:"tagId"`
 }
 
 // ToStatistic ...
 func ToStatistic(statDTO *StatisticDTO) *model.Statistic {
 	return &model.Statistic{
 		ID:         statDTO.ID,
-		StartedAt:  statDTO.StartedAt,
-		FinishedAt: statDTO.FinishedAt,
+		StartTime:  statDTO.StartTime,
+		FinishTime: statDTO.FinishTime,
+		TagID:      statDTO.TagID,
 	}
 }
 
@@ -26,7 +27,8 @@ func ToStatistic(statDTO *StatisticDTO) *model.Statistic {
 func ToStatisticDTO(statistic *model.Statistic) *StatisticDTO {
 	return &StatisticDTO{
 		ID:         statistic.ID,
-		StartedAt:  statistic.StartedAt,
-		FinishedAt: statistic.FinishedAt,
+		StartTime:  statistic.StartTime,
+		FinishTime: statistic.FinishTime,
+		TagID:      statistic.TagID,
 	}
 }
