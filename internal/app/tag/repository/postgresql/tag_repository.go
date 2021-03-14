@@ -13,9 +13,9 @@ type postgreSQLTagRepository struct {
 	db     *gorm.DB
 }
 
-func NewPostgreSQLTagRepository(l *logrus.Logger, db *gorm.DB) tag.Repository {
+func NewPostgreSQLTagRepository(log *logrus.Logger, db *gorm.DB) tag.Repository {
 	return &postgreSQLTagRepository{
-		logger: l,
+		logger: log,
 		db:     db,
 	}
 }
