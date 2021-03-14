@@ -6,6 +6,9 @@ import (
 	authHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/handler"
 	authService "github.com/ahmetcancicek/pomodorogo-server/internal/app/auth/service"
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
+	statisticHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/handler"
+	statisticRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/repository/postgresql"
+	statisticService "github.com/ahmetcancicek/pomodorogo-server/internal/app/statistic/service"
 	tagHandler "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/handler"
 	tagRepository "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/repository/postgresql"
 	tagService "github.com/ahmetcancicek/pomodorogo-server/internal/app/tag/service"
@@ -57,7 +60,11 @@ func (app *pomodoroServerApplication) Init() error {
 	tagRepo := tagRepository.NewPostgreSQLTagRepository(logger, app.db)
 	tagServ := tagService.NewTagService(tagRepo)
 	tagHandler.NewTagHandler(router.NewRoute().Subrouter(), logger, tagServ, authHand.MiddlewareValidateAccessToken)
-	_ = tagRepo
+
+	// Statistic Package
+	statRepo := statisticRepository.NewPostgreSQLStatisticRepository(logger, app.db)
+	statServ := statisticService.NewStatisticService(statRepo, tagRepo)
+	statisticHandler.NewStatisticHandler(router.NewRoute().Subrouter(), logger, statServ, authHand.MiddlewareValidateAccessToken)
 
 	//
 	app.router = router
