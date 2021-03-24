@@ -31,7 +31,6 @@ func NewTagHandler(r *mux.Router, log *logrus.Logger, ts tag.Service, mf mux.Mid
 }
 
 func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	tagDTO := new(dto.TagDTO)
 
@@ -39,8 +38,8 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	err := utils.FromJSON(tagDTO, r.Body)
 	if err != nil {
 		h.logger.Error("unable to decode tag json", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()})
 		return
 	}
 	defer r.Body.Close()
@@ -50,21 +49,19 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	tagDTO, err = h.TagService.Save(tagDTO, userId)
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()})
 		return
 	}
 
 	// 3. Respond successful message
 	h.logger.Debug("tag created successfully")
-	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag created successfully", Data: tagDTO}, w)
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Tag created successfully", Data: tagDTO})
 
 }
 
 func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	tagDTO := new(dto.TagDTO)
 
 	// Integer control
@@ -72,8 +69,8 @@ func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		h.logger.Error("unable to get parameter because of variable type: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()})
 		return
 	}
 
@@ -83,15 +80,15 @@ func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
 	tagDTO, err = h.TagService.FindByIDAndUser(uint(id), userId)
 	if err != nil {
 		h.logger.Error("unable to get tag to database: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()})
 		return
 	}
 
 	// 3- Respond successful message
 	h.logger.Debug("tag got successfully")
-	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag got successfully", Data: tagDTO}, w)
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{Code: http.StatusOK, Status: true, Message: "Tag got successfully", Data: tagDTO})
 }
 
 func (h TagHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -106,8 +103,8 @@ func (h TagHandler) delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		h.logger.Error("unable to get parameter because of variable type: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()})
 		return
 	}
 
@@ -117,13 +114,13 @@ func (h TagHandler) delete(w http.ResponseWriter, r *http.Request) {
 	err = h.TagService.DeleteByIDAndUser(uint(id), userId)
 	if err != nil {
 		h.logger.Error("unable to get tag to database: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()})
 		return
 	}
 
 	// 3- Respond successful message
 	h.logger.Debug("tag deleted successfully")
-	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Tag deleted successfully", Data: ""}, w)
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{Code: http.StatusOK, Status: true, Message: "Tag deleted successfully", Data: ""})
 }

@@ -27,7 +27,6 @@ func NewStatisticHandler(r *mux.Router, log *logrus.Logger, pomodoroService pomo
 }
 
 func (h PomodoroHandler) create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	pomodoroDTO := new(dto.PomodoroDTO)
 
@@ -35,8 +34,10 @@ func (h PomodoroHandler) create(w http.ResponseWriter, r *http.Request) {
 	err := utils.FromJSON(pomodoroDTO, r.Body)
 	if err != nil {
 		h.logger.Error("unable to decode work duration json", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(
+			w,
+			&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.Error()},
+		)
 		return
 	}
 	defer r.Body.Close()
@@ -46,14 +47,13 @@ func (h PomodoroHandler) create(w http.ResponseWriter, r *http.Request) {
 	pomodoroDTO, err = h.StatisticService.Save(pomodoroDTO, userId)
 	if err != nil {
 		h.logger.Error("unable to insert work duration to database: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()})
 		return
 	}
 
 	// 3. Respond successful message
 	h.logger.Debug("work duration added successfully")
-	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Work duration added successfully", Data: pomodoroDTO}, w)
-
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Work duration added successfully", Data: pomodoroDTO})
 }

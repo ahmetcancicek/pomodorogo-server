@@ -41,7 +41,6 @@ func NewAuthHandler(r *mux.Router, log *logrus.Logger, us account.Service, as au
 }
 
 func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	// 1. Decode request body
 	user := r.Context().Value(UserKey{}).(model.User)
@@ -50,8 +49,8 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	hashedPass, err := h.hashPassword(user.Password)
 	tokenHash := utils.GenerateRandomString(15)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(&model.GenericResponse{Status: false, Message: model.ErrUserSignUpFailed}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignUpFailed})
 		return
 	}
 
@@ -61,15 +60,15 @@ func (h AuthHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	err = h.AccountService.Save(&user)
 	if err != nil {
 		h.logger.Error("unable to insert user to database: ", err)
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: err.Error()})
 		return
 	}
 
 	// 4- Respond successful message
 	h.logger.Debug("user created successfully")
-	w.WriteHeader(http.StatusCreated)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "User created successfully", Data: ""}, w)
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "User created successfully", Data: ""})
 }
 
 func (h *AuthHandler) hashPassword(password string) (string, error) {
@@ -82,7 +81,6 @@ func (h *AuthHandler) hashPassword(password string) (string, error) {
 }
 
 func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	// 1. Decode request body
 	reqUser := r.Context().Value(UserKey{}).(model.User)
@@ -90,8 +88,8 @@ func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	// 2. Validate
 	err := utils.PayloadValidator(reqUser)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusBadRequest, Status: false, Message: err.(validator.ValidationErrors).Error()})
 		return
 	}
 
@@ -99,15 +97,15 @@ func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	user, err := h.AccountService.FindByEmail(reqUser.Email)
 	if err != nil {
 		h.logger.Error("error fetching the user: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed})
 		return
 	}
 
 	if valid := h.AuthService.Authenticate(reqUser.Password, user); !valid {
 		h.logger.Debug("authentication of user failed")
-		w.WriteHeader(http.StatusBadRequest)
-		utils.ToJSON(&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: model.ErrUserSignInFailed})
 		return
 	}
 
@@ -115,8 +113,9 @@ func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	accessToken, err := h.AuthService.GenerateAccessToken(user)
 	if err != nil {
 		h.logger.Error("unable to generate access token: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"})
+
 		return
 	}
 
@@ -124,13 +123,18 @@ func (h AuthHandler) signIn(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := h.AuthService.GenerateRefreshToken(user)
 	if err != nil {
 		h.logger.Error("unable to generate refresh token: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		utils.ToJSON(model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"}, w)
+		utils.RespondWithJSON(w,
+			&model.GenericResponse{Code: http.StatusInternalServerError, Status: false, Message: "Unable to login the user. Please try again later"})
 		return
 	}
 
 	// 6. Respond Token
 	h.logger.Debug("successfully generated token: ", accessToken, refreshToken)
-	w.WriteHeader(http.StatusOK)
-	utils.ToJSON(&model.GenericResponse{Code: 200, Status: true, Message: "Successfully logged in", Data: &dto.AuthSignInResponseDTO{AccessToken: accessToken, RefreshToken: refreshToken}}, w)
+	utils.RespondWithJSON(w,
+		&model.GenericResponse{
+			Code:    http.StatusOK,
+			Status:  true,
+			Message: "Successfully logged in",
+			Data:    &dto.AuthSignInResponseDTO{AccessToken: accessToken, RefreshToken: refreshToken},
+		})
 }
