@@ -12,14 +12,14 @@ import (
 )
 
 type PomodoroHandler struct {
-	logger           *logrus.Logger
-	StatisticService pomodoro.Service
+	logger          *logrus.Logger
+	PomodoroService pomodoro.Service
 }
 
 func NewStatisticHandler(r *mux.Router, log *logrus.Logger, pomodoroService pomodoro.Service, mf mux.MiddlewareFunc) {
 	pomodoroHandler := &PomodoroHandler{
-		logger:           log,
-		StatisticService: pomodoroService,
+		logger:          log,
+		PomodoroService: pomodoroService,
 	}
 
 	r.HandleFunc("/api/v1/pomodoro", pomodoroHandler.create).Methods(http.MethodPost)
@@ -44,7 +44,7 @@ func (h PomodoroHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	// 2. Save
 	userId := r.Context().Value(handler.UserIDKey{}).(uint)
-	pomodoroDTO, err = h.StatisticService.Save(pomodoroDTO, userId)
+	createdPomodoro, err := h.PomodoroService.Save(dto.ToPomodoro(pomodoroDTO), userId)
 	if err != nil {
 		h.logger.Error("unable to insert work duration to database: ", err)
 		utils.RespondWithJSON(w,
@@ -55,5 +55,5 @@ func (h PomodoroHandler) create(w http.ResponseWriter, r *http.Request) {
 	// 3. Respond successful message
 	h.logger.Debug("work duration added successfully")
 	utils.RespondWithJSON(w,
-		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Work duration added successfully", Data: pomodoroDTO})
+		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Work duration added successfully", Data: dto.ToPomodoroDTO(createdPomodoro)})
 }

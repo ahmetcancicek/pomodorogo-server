@@ -4,7 +4,6 @@ import (
 	"github.com/ahmetcancicek/pomodorogo-server/internal/app/model"
 )
 
-// StatisticRepository represent the statistic's repository
 type Repository interface {
-	Save(statistic *model.Pomodoro) (*model.Pomodoro, error)
+	Save(pomodoro *model.Pomodoro) (*model.Pomodoro, error)
 }
