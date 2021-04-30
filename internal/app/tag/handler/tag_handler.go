@@ -46,7 +46,7 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	// 2. Save
 	userId := r.Context().Value(handler.UserIDKey{}).(uint)
-	tagDTO, err = h.TagService.Save(tagDTO, userId)
+	createdTag, err := h.TagService.Save(dto.ToTag(tagDTO), userId)
 	if err != nil {
 		h.logger.Error("unable to insert tag to database: ", err)
 		utils.RespondWithJSON(w,
@@ -57,13 +57,11 @@ func (h TagHandler) create(w http.ResponseWriter, r *http.Request) {
 	// 3. Respond successful message
 	h.logger.Debug("tag created successfully")
 	utils.RespondWithJSON(w,
-		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Tag created successfully", Data: tagDTO})
+		&model.GenericResponse{Code: http.StatusCreated, Status: true, Message: "Tag created successfully", Data: dto.ToTagDTO(createdTag)})
 
 }
 
 func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
-	tagDTO := new(dto.TagDTO)
-
 	// Integer control
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -77,7 +75,7 @@ func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(handler.UserIDKey{}).(uint)
 
 	// 2. Get
-	tagDTO, err = h.TagService.FindByIDAndUser(uint(id), userId)
+	tag, err := h.TagService.FindByIDAndUser(uint(id), userId)
 	if err != nil {
 		h.logger.Error("unable to get tag to database: ", err)
 		utils.RespondWithJSON(w,
@@ -88,7 +86,7 @@ func (h TagHandler) read(w http.ResponseWriter, r *http.Request) {
 	// 3- Respond successful message
 	h.logger.Debug("tag got successfully")
 	utils.RespondWithJSON(w,
-		&model.GenericResponse{Code: http.StatusOK, Status: true, Message: "Tag got successfully", Data: tagDTO})
+		&model.GenericResponse{Code: http.StatusOK, Status: true, Message: "Tag got successfully", Data: dto.ToTagDTO(tag)})
 }
 
 func (h TagHandler) update(w http.ResponseWriter, r *http.Request) {

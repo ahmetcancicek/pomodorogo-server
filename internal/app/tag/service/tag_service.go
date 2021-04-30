@@ -20,39 +20,39 @@ func NewTagService(tagRepository tag.Repository) tag.Service {
 	}
 }
 
-func (t tagService) FindByID(id uint) (*dto.TagDTO, error) {
-	tag, err := t.tagRepository.FindByID(id)
+func (t tagService) FindByID(id uint) (*model.Tag, error) {
+	tg, err := t.tagRepository.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return dto.ToTagDTO(tag), err
+	return tg, err
 }
 
-func (t tagService) FindByName(name string) (*dto.TagDTO, error) {
-	tag, err := t.tagRepository.FindByName(name)
+func (t tagService) FindByName(name string) (*model.Tag, error) {
+	tg, err := t.tagRepository.FindByName(name)
 	if err != nil {
 		return nil, err
 	}
 
-	return dto.ToTagDTO(tag), err
+	return tg, err
 }
 
-func (t tagService) FindByNameAndUser(name string, userId uint) (*dto.TagDTO, error) {
-	tag, err := t.tagRepository.FindByNameAndUser(name, userId)
+func (t tagService) FindByNameAndUser(name string, userId uint) (*model.Tag, error) {
+	tg, err := t.tagRepository.FindByNameAndUser(name, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	return dto.ToTagDTO(tag), err
+	return tg, err
 }
 
-func (t tagService) FindByIDAndUser(id uint, userId uint) (*dto.TagDTO, error) {
-	tag, err := t.tagRepository.FindByIDAndUser(id, userId)
+func (t tagService) FindByIDAndUser(id uint, userId uint) (*model.Tag, error) {
+	tg, err := t.tagRepository.FindByIDAndUser(id, userId)
 	if err != nil {
 		return nil, err
 	}
-	return dto.ToTagDTO(tag), err
+	return tg, err
 }
 
 func (t tagService) validate(tagDTO *dto.TagDTO) error {
@@ -63,30 +63,28 @@ func (t tagService) validate(tagDTO *dto.TagDTO) error {
 	return nil
 }
 
-func (t tagService) Save(tagDTO *dto.TagDTO, userId uint) (*dto.TagDTO, error) {
+func (t tagService) Save(tag *model.Tag, userId uint) (*model.Tag, error) {
 
-	err := t.validate(tagDTO)
+	err := t.validate(dto.ToTagDTO(tag))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = t.FindByNameAndUser(tagDTO.Name, userId)
+	_, err = t.FindByNameAndUser(tag.Name, userId)
 	if err == nil {
 		return nil, errors.New(model.ErrTagAlreadyExists)
 	}
 
-	tag := dto.ToTag(tagDTO)
 	tag.UserID = userId
 	tag, err = t.tagRepository.Save(tag)
-	return dto.ToTagDTO(tag), err
+	return tag, err
 }
 
-func (t tagService) Update(tagDTO *dto.TagDTO) (*dto.TagDTO, error) {
-	tag := dto.ToTag(tagDTO)
+func (t tagService) Update(tag *model.Tag) (*model.Tag, error) {
 	tag.UpdatedAt = time.Now()
-	tag, err := t.tagRepository.Update(tag)
+	tg, err := t.tagRepository.Update(tag)
 
-	return dto.ToTagDTO(tag), err
+	return tg, err
 }
 
 func (t tagService) Delete(id uint) error {
